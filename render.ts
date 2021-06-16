@@ -1,4 +1,4 @@
-import { Circle, RenderingDataList, Text } from "./renderingData";
+import { Button, Circle, RenderingDataList, Text } from "./renderingData";
 
 export function render(
   context: CanvasRenderingContext2D,
@@ -17,9 +17,14 @@ export function render(
           renderText(context, data);
         }
         break;
+      case "button":
+        {
+          renderButton(context, data);
+        }
+        break;
       default:
         {
-          console.error(`unknown data ${data}`);
+          console.error(`unknown data`, data);
         }
         break;
     }
@@ -44,10 +49,20 @@ function renderCircle(context: CanvasRenderingContext2D, data: Circle): void {
 }
 
 function renderText(context: CanvasRenderingContext2D, data: Text) {
-  (context.textAlign = data.align), (context.font = `${data.fontSize}px`);
+  context.textAlign = data.align;
+  context.textBaseline = data.textBaseline;
+  context.font = `${data.fontSize}px`;
   context.fillStyle = `rgba(${data.color.r}, ${data.color.g}, ${data.color.b}, ${data.color.a})`;
   context.translate(+data.position.x, +data.position.y);
   context.rotate(data.rotationAngle);
   context.translate(-data.position.x, -data.position.y);
   context.fillText(data.content, data.position.x, data.position.y);
+}
+
+function renderButton(context: CanvasRenderingContext2D, data: Button) {
+  context.strokeStyle = "1px black";
+  context.strokeRect(data.position.x, data.position.y, data.width, data.height);
+  context.translate(data.position.x, data.position.y);
+  renderText(context, data.text);
+  context.translate(-data.position.x, -data.position.y);
 }

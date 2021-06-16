@@ -18,6 +18,13 @@ export type Text = {
   type: "text";
   id: number;
   align: "left" | "center" | "right";
+  textBaseline:
+    | "alphabetic"
+    | "bottom"
+    | "hanging"
+    | "ideographic"
+    | "middle"
+    | "top";
   position: {
     x: number;
     y: number;
@@ -33,8 +40,21 @@ export type Text = {
   rotationAngle: number;
 };
 
-export type RenderingDataList = Array<Circle | Text>;
-export type RenderingDataMap = { [id: number]: typeof renderingDataList[0] };
+export type Button = {
+  type: "button";
+  id: number;
+  position: {
+    x: number;
+    y: number;
+  };
+  width: number;
+  height: number;
+  text: Text;
+};
+
+export type RenderingData = Circle | Text | Button;
+export type RenderingDataList = Array<RenderingData>;
+export type RenderingDataMap = { [id: number]: RenderingData };
 
 export const renderingDataList: RenderingDataList = [
   {
@@ -56,6 +76,7 @@ export const renderingDataList: RenderingDataList = [
     type: "text",
     id: 1,
     align: "right",
+    textBaseline: "middle",
     fontSize: 10,
     position: {
       x: 250,
@@ -69,5 +90,34 @@ export const renderingDataList: RenderingDataList = [
       a: 1,
     },
     rotationAngle: 0,
+  },
+  {
+    type: "button",
+    id: 2,
+    width: 40,
+    height: 20,
+    position: {
+      x: 300,
+      y: 100,
+    },
+    text: {
+      type: "text",
+      id: 3,
+      align: "center",
+      textBaseline: "middle",
+      content: "Start!",
+      fontSize: 10,
+      position: {
+        x: 20,
+        y: 10,
+      },
+      color: {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 1,
+      },
+      rotationAngle: 0,
+    },
   },
 ];
