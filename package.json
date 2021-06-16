@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "watch": "npm run build -- --watch",
     "build": "esbuild index.ts --bundle --minify --sourcemap --outfile=build/bundle.js"
   },
   "author": "",
