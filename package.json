@@ -1,0 +1,14 @@
+{
+  "name": "namui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild index.ts --bundle --minify --sourcemap --outfile=build/bundle.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "esbuild": "^0.12.9"
+  }
+}
