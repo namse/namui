@@ -53,14 +53,26 @@ export type Button = {
 };
 
 export type Audio = {
-  type: 'audio';
+  type: "audio";
   id: number;
   filePath: string;
   volume: number;
   isPlaying: boolean;
-}
+};
 
-export type RenderingData = Circle | Text | Button;
+export type AudioWaveForm = {
+  type: "audioWaveForm";
+  id: number;
+  buffer: Uint8Array;
+  width: number;
+  height: number;
+  position: {
+    x: number;
+    y: number;
+  };
+};
+
+export type RenderingData = Circle | Text | Button | AudioWaveForm;
 export type RenderingDataList = Array<RenderingData>;
 export type RenderingDataMap = { [id: number]: RenderingData };
 
@@ -92,6 +104,17 @@ export const renderingDataList: RenderingDataList = [
         a: 1,
       },
       rotationAngle: 0,
+    },
+  },
+  {
+    type: "audioWaveForm",
+    id: 2,
+    buffer: new Uint8Array(1024),
+    width: 300,
+    height: 100,
+    position: {
+      x: 0,
+      y: 0,
     },
   },
 ];

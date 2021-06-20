@@ -219,6 +219,23 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
       break;
     }
     case "recording": {
+      if (data.audioWaveFormId) {
+        const audioWaveFormData =
+          context.renderingDataMap[data.audioWaveFormId];
+        if (!audioWaveFormData) {
+          throw new Error("cannot find audioWaveForm");
+        }
+
+        if (audioWaveFormData.type !== "audioWaveForm") {
+          throw new Error("data is not audioWaveForm");
+        }
+
+        context.native.record.fillAudioWaveFormBuffer(
+          data.id,
+          audioWaveFormData.buffer
+        );
+      }
+
       if (!context.clickInfo) {
         break;
       }

@@ -1,4 +1,10 @@
-import { Button, Circle, RenderingDataList, Text } from "./renderingData";
+import {
+  AudioWaveForm,
+  Button,
+  Circle,
+  RenderingDataList,
+  Text,
+} from "./renderingData";
 
 export function render(
   context: CanvasRenderingContext2D,
@@ -20,6 +26,11 @@ export function render(
       case "button":
         {
           renderButton(context, data);
+        }
+        break;
+      case "audioWaveForm":
+        {
+          renderAudioWaveForm(context, data);
         }
         break;
       default:
@@ -64,5 +75,38 @@ function renderButton(context: CanvasRenderingContext2D, data: Button) {
   context.strokeRect(data.position.x, data.position.y, data.width, data.height);
   context.translate(data.position.x, data.position.y);
   renderText(context, data.text);
+  context.translate(-data.position.x, -data.position.y);
+}
+function renderAudioWaveForm(
+  context: CanvasRenderingContext2D,
+  data: AudioWaveForm
+) {
+  context.translate(data.position.x, data.position.y);
+
+  context.fillStyle = "rgb(200, 200, 200)";
+  context.fillRect(0, 0, data.width, data.height);
+
+  context.lineWidth = 2;
+  context.strokeStyle = "rgb(0, 0, 0)";
+
+  context.beginPath();
+
+  const sliceWidth = data.width / data.buffer.length;
+
+  for (let i = 0; i < data.buffer.length; i++) {
+    const x = i * sliceWidth;
+    const v = data.buffer[i] / 128.0;
+    const y = (v * data.height) / 2;
+
+    if (i === 0) {
+      context.moveTo(x, y);
+    } else {
+      context.lineTo(x, y);
+    }
+  }
+
+  context.lineTo(data.width, data.height / 2);
+  context.stroke();
+
   context.translate(-data.position.x, -data.position.y);
 }
