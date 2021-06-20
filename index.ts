@@ -7,6 +7,8 @@ import { render } from "./render";
 import { ClickInfo, update, UpdateContext } from "./update";
 import { updatingDataList } from "./updatingData";
 import { stateData } from "./stateData";
+import { Native } from "./native";
+import { record } from "./native-web/record";
 
 const canvas = document.createElement("canvas");
 canvas.width = 500;
@@ -15,7 +17,9 @@ document.body.appendChild(canvas);
 
 const context = canvas.getContext("2d");
 
-function toMap(renderingDataList: RenderingDataList): RenderingDataMap {
+function toMap<TItem extends { id: number }>(
+  renderingDataList: TItem[]
+): { [id: number]: TItem } {
   const map = {};
   renderingDataList.forEach((renderingData) => {
     map[renderingData.id] = renderingData;
@@ -34,16 +38,25 @@ canvas.addEventListener("click", (event) => {
   };
 });
 
+const native: Native = {
+  record,
+};
+
 function onFrame() {
   context.clearRect(0, 0, canvas.width, canvas.height);
+
   const renderingDataMap = toMap(renderingDataList);
+  const updatingDataMap = toMap(updatingDataList);
+
   const updateContext: UpdateContext = {
     dataList: updatingDataList,
     renderingDataMap,
+    updatingDataMap,
     clickInfo,
     newDataList: [],
     removingDataList: [],
     state: stateData,
+    native,
   };
 
   update(updateContext);

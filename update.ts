@@ -4,10 +4,12 @@ import {
   MapRecordingStateToButtonText,
   Move,
   Rotation,
-  StartRecordOnClick,
+  RecordOnClick,
   UpdatingDataList,
+  UpdatingDataMap,
 } from "./updatingData";
 import { StateData } from "./stateData";
+import { Native } from "./native";
 
 export type ClickInfo = {
   position: {
@@ -18,11 +20,13 @@ export type ClickInfo = {
 
 export type UpdateContext = {
   dataList: UpdatingDataList;
+  updatingDataMap: UpdatingDataMap;
   renderingDataMap: RenderingDataMap;
   clickInfo?: ClickInfo;
   newDataList: UpdatingDataList;
   removingDataList: UpdatingDataList;
   state: StateData;
+  native: Native;
 };
 
 export function update(context: UpdateContext) {
@@ -40,8 +44,8 @@ export function update(context: UpdateContext) {
         updateMove(context, data);
         return;
       }
-      case "startRecordOnClick": {
-        updateStartRecordOnclick(context, data);
+      case "recordOnClick": {
+        updateRecordOnclick(context, data);
         return;
       }
       case "mapRecordingStateToButtonText": {
@@ -179,14 +183,7 @@ function updateMove(context: UpdateContext, data: Move) {
   move(target, data);
 }
 
-function updateStartRecordOnclick(
-  context: UpdateContext,
-  data: StartRecordOnClick
-) {
-  if (!context.clickInfo || context.state.recordingState !== "idle") {
-    return;
-  }
-
+function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
   const target = context.renderingDataMap[data.buttonId];
   if (!target) {
     throw new Error("cannot find target");
@@ -196,35 +193,61 @@ function updateStartRecordOnclick(
     throw new Error("target is not button");
   }
 
-  const isClicked = checkPositionInRenderingData(
-    target,
-    context.clickInfo.position
-  );
-  if (!isClicked) {
-    return;
+  switch (data.state) {
+    case "idle": {
+      if (!context.clickInfo) {
+        break;
+      }
+      const isClicked = checkPositionInRenderingData(
+        target,
+        context.clickInfo.position
+      );
+      if (!isClicked) {
+        break;
+      }
+      data.state = "initializing";
+      context.native.record.startInitializeRecord(data.id);
+      break;
+    }
+    case "initializing": {
+      if (context.native.record.isInitializingDone(data.id)) {
+        context.native.record.startRecord(data.id);
+        data.state = "recording";
+      } else if (context.native.record.isInitializingError(data.id)) {
+        data.state = "idle";
+      }
+      break;
+    }
+    case "recording": {
+      if (!context.clickInfo) {
+        break;
+      }
+      const isClicked = checkPositionInRenderingData(
+        target,
+        context.clickInfo.position
+      );
+      if (!isClicked) {
+        break;
+      }
+      context.native.record.stopRecord(data.id);
+      data.state = "idle";
+      break;
+    }
   }
-
-  context.state.recordingState = "initializing";
-  navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-    })
-    .then((stream) => {
-      const recorder = new MediaRecorder(stream);
-      recorder.start();
-      console.log("record started!");
-      context.state.recordingState = "recording";
-    })
-    .catch((error) => {
-      console.error(error);
-      context.state.recordingState = "idle";
-    });
 }
 
 function updateMapRecordingStateToButtonText(
   context: UpdateContext,
   data: MapRecordingStateToButtonText
 ) {
+  const recordOnClickData = context.updatingDataMap[data.updatingId];
+  if (!recordOnClickData) {
+    throw new Error("cannot find data");
+  }
+  if (recordOnClickData.type !== "recordOnClick") {
+    throw new Error("data is not recordOnClick");
+  }
+
   const target = context.renderingDataMap[data.buttonId];
   if (!target) {
     throw new Error("cannot find target");
@@ -234,7 +257,7 @@ function updateMapRecordingStateToButtonText(
     throw new Error("target is not button");
   }
 
-  switch (context.state.recordingState) {
+  switch (recordOnClickData.state) {
     case "idle": {
       target.text.content = "record";
       break;
