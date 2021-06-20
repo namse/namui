@@ -1,4 +1,4 @@
-import { IRecord } from "../../native/record";
+import { IRecord } from "../../native/Record";
 
 type RecordState = {
   mediaRecorder?: MediaRecorder;
@@ -6,7 +6,6 @@ type RecordState = {
   isInitializingError: boolean;
   chunks: Blob[];
   recordResult?: {
-    audioBlob: Blob;
     samples: Float32Array;
   };
 };
@@ -22,7 +21,7 @@ export class Record implements IRecord {
       chunks: [],
     };
 
-    if (this.recordingStates[id]?.mediaRecorder?.state === 'recording') {
+    if (this.recordingStates[id]?.mediaRecorder?.state === "recording") {
       this.recordingStates[id].mediaRecorder?.stop();
     }
 
@@ -64,10 +63,7 @@ export class Record implements IRecord {
       const arrayBuffer = await blob.arrayBuffer();
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       const samples = audioBuffer.getChannelData(0);
-      state.recordResult = {
-        audioBlob: blob,
-        samples,
-      };
+      state.recordResult = { samples };
     };
     mediaRecorder.stop();
   }
@@ -87,9 +83,7 @@ export class Record implements IRecord {
     }
     analyserNode.getByteTimeDomainData(buffer);
   }
-  getResult(
-    id: number
-  ): { audioBlob: Blob; samples: Float32Array } | undefined {
+  getResult(id: number): { samples: Float32Array } | undefined {
     return this.recordingStates[id]?.recordResult;
   }
 }

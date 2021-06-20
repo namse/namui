@@ -34,10 +34,14 @@ export type Move = {
 export type RecordOnClick = {
   type: "recordOnClick";
   id: number;
-  buttonId: number;
+  recordButtonId: number;
+  playButtonId: number;
   state: "idle" | "initializing" | "recording" | "finishing";
-  realtimeAudioWaveFormId: number;
-  fullAudioWaveFormId: number;
+  realtimeAudioWaveFormId?: number;
+  realtimeAudioBuffer: Uint8Array;
+  fullAudioWaveFormId?: number;
+  fullAudioBuffer?: Float32Array;
+  playId?: number;
 };
 
 export type MapRecordingStateToButtonText = {
@@ -61,9 +65,11 @@ export const updatingDataList: UpdatingDataList = [
   {
     type: "recordOnClick",
     id: 0,
-    buttonId: 0,
+    recordButtonId: 0,
+    playButtonId: 4,
     state: "idle",
     realtimeAudioWaveFormId: 2,
+    realtimeAudioBuffer: new Uint8Array(1024),
     fullAudioWaveFormId: 3,
   },
   {

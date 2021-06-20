@@ -146,4 +146,33 @@ export const renderingDataList: RenderingDataList = [
       y: 100,
     },
   },
+  {
+    type: "button",
+    id: 4,
+    width: 40,
+    height: 20,
+    position: {
+      x: 300,
+      y: 140,
+    },
+    text: {
+      type: "text",
+      id: 5,
+      align: "center",
+      textBaseline: "middle",
+      content: "play",
+      fontSize: 10,
+      position: {
+        x: 20,
+        y: 10,
+      },
+      color: {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 1,
+      },
+      rotationAngle: 0,
+    },
+  },
 ];

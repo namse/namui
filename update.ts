@@ -183,15 +183,22 @@ function updateMove(context: UpdateContext, data: Move) {
   move(target, data);
 }
 
-function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
-  const target = context.renderingDataMap[data.buttonId];
+function getTarget<
+  TType extends RenderingData["type"],
+  TData = Extract<RenderingData, { type: TType }>
+>(context: UpdateContext, id: number, type: TType): TData {
+  const target = context.renderingDataMap[id];
   if (!target) {
-    throw new Error("cannot find target");
+    throw new Error(`cannot find ${id}`);
   }
+  if (target.type !== type) {
+    throw new Error(`target is not ${type}`);
+  }
+  return target as unknown as TData;
+}
 
-  if (target.type !== "button") {
-    throw new Error("target is not button");
-  }
+function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
+  const recordButton = getTarget(context, data.recordButtonId, "button");
 
   switch (data.state) {
     case "idle": {
@@ -199,13 +206,14 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
         break;
       }
       const isClicked = checkPositionInRenderingData(
-        target,
+        recordButton,
         context.clickInfo.position
       );
       if (!isClicked) {
         break;
       }
       data.state = "initializing";
+      data.fullAudioBuffer = undefined;
       context.native.record.startInitializeRecord(data.id);
       break;
     }
@@ -220,19 +228,9 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
     }
     case "recording": {
       if (data.realtimeAudioWaveFormId) {
-        const realtimeAudioWaveFormData =
-          context.renderingDataMap[data.realtimeAudioWaveFormId];
-        if (!realtimeAudioWaveFormData) {
-          throw new Error("cannot find audioWaveForm");
-        }
-
-        if (realtimeAudioWaveFormData.type !== "uint8AudioWaveForm") {
-          throw new Error("data is not uint8AudioWaveForm");
-        }
-
         context.native.record.fillAudioWaveFormBuffer(
           data.id,
-          realtimeAudioWaveFormData.buffer
+          data.realtimeAudioBuffer
         );
       }
 
@@ -240,7 +238,7 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
         break;
       }
       const isClicked = checkPositionInRenderingData(
-        target,
+        recordButton,
         context.clickInfo.position
       );
       if (!isClicked) {
@@ -255,20 +253,58 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
       if (!result) {
         break;
       }
-      const fullAudioWaveFormData =
-        context.renderingDataMap[data.fullAudioWaveFormId];
-      if (!fullAudioWaveFormData) {
-        throw new Error("cannot find audioWaveForm");
-      }
-
-      if (fullAudioWaveFormData.type !== "float32AudioWaveForm") {
-        throw new Error("data is not float32AudioWaveForm");
-      }
-      fullAudioWaveFormData.buffer = result.samples;
-      data.state = 'idle';
+      data.fullAudioBuffer = result.samples;
+      data.state = "idle";
       break;
     }
   }
+
+  if (data.realtimeAudioWaveFormId) {
+    const realtimeAudioWaveFormData = getTarget(
+      context,
+      data.realtimeAudioWaveFormId,
+      "uint8AudioWaveForm"
+    );
+    realtimeAudioWaveFormData.buffer = data.realtimeAudioBuffer;
+  }
+
+  if (data.fullAudioWaveFormId && data.fullAudioBuffer) {
+    const fullAudioWaveFormData = getTarget(
+      context,
+      data.fullAudioWaveFormId,
+      "float32AudioWaveForm"
+    );
+    fullAudioWaveFormData.buffer = data.fullAudioBuffer;
+  }
+
+  checkPlayRecord(context, data);
+}
+
+function checkPlayRecord(context: UpdateContext, data: RecordOnClick) {
+  if (data.playId) {
+    if (context.native.audioPlayer.isPlayFinished(data.playId)) {
+      context.native.audioPlayer.clearAudio(data.playId);
+      data.playId = undefined;
+    }
+  }
+
+  if (!data.fullAudioBuffer || !context.clickInfo) {
+    return;
+  }
+
+  const playButton = getTarget(context, data.playButtonId, "button");
+  const isClicked = checkPositionInRenderingData(
+    playButton,
+    context.clickInfo.position
+  );
+  if (!isClicked) {
+    return;
+  }
+
+  const { playId } = context.native.audioPlayer.playSamples(data.fullAudioBuffer);
+  // const { playId } = context.native.audioPlayer.play(data.fullAudioBuffer);
+  
+  data.playId = playId;
 }
 
 function updateMapRecordingStateToButtonText(
@@ -303,6 +339,10 @@ function updateMapRecordingStateToButtonText(
     }
     case "recording": {
       target.text.content = "stop";
+      break;
+    }
+    case "finishing": {
+      target.text.content = "...";
       break;
     }
   }
