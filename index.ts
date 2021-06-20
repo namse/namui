@@ -6,6 +6,7 @@ import {
 import { render } from "./render";
 import { ClickInfo, update, UpdateContext } from "./update";
 import { updatingDataList } from "./updatingData";
+import { stateData } from "./stateData";
 
 const canvas = document.createElement("canvas");
 canvas.width = 500;
@@ -42,6 +43,7 @@ function onFrame() {
     clickInfo,
     newDataList: [],
     removingDataList: [],
+    state: stateData,
   };
 
   update(updateContext);

@@ -19,23 +19,41 @@ export type AddAfterClick<T extends WithTarget> = {
   once: boolean;
 };
 
-export type UpdatingData = Rotation | AddAfterClick<Rotation>;
+export type Move = {
+  type: "move";
+  targetId: number;
+  velocity: {
+    x: number;
+    y: number;
+  };
+};
+
+export type StartRecordOnClick = {
+  type: "startRecordOnClick";
+  buttonId: number;
+};
+
+export type MapRecordingStateToButtonText = {
+  type: "mapRecordingStateToButtonText";
+  buttonId: number;
+};
+
+export type UpdatingData =
+  | Rotation
+  | AddAfterClick<Rotation>
+  | Move
+  | StartRecordOnClick
+  | MapRecordingStateToButtonText;
 
 export type UpdatingDataList = Array<UpdatingData>;
 
 export const updatingDataList: UpdatingDataList = [
   {
-    type: "addAfterClick",
-    targetId: 2,
-    value: {
-      type: "rotation",
-      targetId: 1,
-      angularVelocity: (2 * Math.PI * 2) / 60 / 10,
-      anchor: {
-        x: 150,
-        y: 150,
-      },
-    },
-    once: true,
+    type: "startRecordOnClick",
+    buttonId: 0,
+  },
+  {
+    type: "mapRecordingStateToButtonText",
+    buttonId: 0,
   },
 ];

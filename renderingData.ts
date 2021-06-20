@@ -52,48 +52,22 @@ export type Button = {
   text: Text;
 };
 
+export type Audio = {
+  type: 'audio';
+  id: number;
+  filePath: string;
+  volume: number;
+  isPlaying: boolean;
+}
+
 export type RenderingData = Circle | Text | Button;
 export type RenderingDataList = Array<RenderingData>;
 export type RenderingDataMap = { [id: number]: RenderingData };
 
 export const renderingDataList: RenderingDataList = [
   {
-    type: "circle",
-    id: 0,
-    center: {
-      x: 150,
-      y: 150,
-    },
-    radius: 100,
-    color: {
-      r: 255,
-      g: 0,
-      b: 0,
-      a: 1,
-    },
-  },
-  {
-    type: "text",
-    id: 1,
-    align: "right",
-    textBaseline: "middle",
-    fontSize: 10,
-    position: {
-      x: 250,
-      y: 150,
-    },
-    content: "hello world",
-    color: {
-      r: 0,
-      g: 255,
-      b: 0,
-      a: 1,
-    },
-    rotationAngle: 0,
-  },
-  {
     type: "button",
-    id: 2,
+    id: 0,
     width: 40,
     height: 20,
     position: {
@@ -102,7 +76,7 @@ export const renderingDataList: RenderingDataList = [
     },
     text: {
       type: "text",
-      id: 3,
+      id: 1,
       align: "center",
       textBaseline: "middle",
       content: "Start!",

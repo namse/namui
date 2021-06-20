@@ -1,5 +1,13 @@
 import { RenderingData, RenderingDataMap } from "./renderingData";
-import { AddAfterClick, Rotation, UpdatingDataList } from "./updatingData";
+import {
+  AddAfterClick,
+  MapRecordingStateToButtonText,
+  Move,
+  Rotation,
+  StartRecordOnClick,
+  UpdatingDataList,
+} from "./updatingData";
+import { StateData } from "./stateData";
 
 export type ClickInfo = {
   position: {
@@ -14,6 +22,7 @@ export type UpdateContext = {
   clickInfo?: ClickInfo;
   newDataList: UpdatingDataList;
   removingDataList: UpdatingDataList;
+  state: StateData;
 };
 
 export function update(context: UpdateContext) {
@@ -25,6 +34,18 @@ export function update(context: UpdateContext) {
       }
       case "addAfterClick": {
         updateAddAfterClick(context, data);
+        return;
+      }
+      case "move": {
+        updateMove(context, data);
+        return;
+      }
+      case "startRecordOnClick": {
+        updateStartRecordOnclick(context, data);
+        return;
+      }
+      case "mapRecordingStateToButtonText": {
+        updateMapRecordingStateToButtonText(context, data);
         return;
       }
       default: {
@@ -135,5 +156,96 @@ function updateAddAfterClick(
 
   if (data.once) {
     context.removingDataList.push(data);
+  }
+}
+
+function move(target: RenderingData, data: Move) {
+  switch (target.type) {
+    case "text":
+      {
+        target.position.x += data.velocity.x;
+        target.position.y += data.velocity.y;
+      }
+      break;
+  }
+}
+
+function updateMove(context: UpdateContext, data: Move) {
+  const target = context.renderingDataMap[data.targetId];
+  if (!target) {
+    throw new Error("cannot find target");
+  }
+
+  move(target, data);
+}
+
+function updateStartRecordOnclick(
+  context: UpdateContext,
+  data: StartRecordOnClick
+) {
+  if (!context.clickInfo || context.state.recordingState !== "idle") {
+    return;
+  }
+
+  const target = context.renderingDataMap[data.buttonId];
+  if (!target) {
+    throw new Error("cannot find target");
+  }
+
+  if (target.type !== "button") {
+    throw new Error("target is not button");
+  }
+
+  const isClicked = checkPositionInRenderingData(
+    target,
+    context.clickInfo.position
+  );
+  if (!isClicked) {
+    return;
+  }
+
+  context.state.recordingState = "initializing";
+  navigator.mediaDevices
+    .getUserMedia({
+      audio: true,
+    })
+    .then((stream) => {
+      const recorder = new MediaRecorder(stream);
+      recorder.start();
+      console.log("record started!");
+      context.state.recordingState = "recording";
+    })
+    .catch((error) => {
+      console.error(error);
+      context.state.recordingState = "idle";
+    });
+}
+
+function updateMapRecordingStateToButtonText(
+  context: UpdateContext,
+  data: MapRecordingStateToButtonText
+) {
+  const target = context.renderingDataMap[data.buttonId];
+  if (!target) {
+    throw new Error("cannot find target");
+  }
+
+  if (target.type !== "button") {
+    throw new Error("target is not button");
+  }
+
+  switch (context.state.recordingState) {
+    case "idle": {
+      target.text.content = "record";
+      break;
+    }
+    case "initializing": {
+      target.text.content = "...";
+      break;
+    }
+    case "recording": {
+      target.text.content = "stop";
+      break;
+    }
   }
 }
