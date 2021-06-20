@@ -219,20 +219,20 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
       break;
     }
     case "recording": {
-      if (data.audioWaveFormId) {
-        const audioWaveFormData =
-          context.renderingDataMap[data.audioWaveFormId];
-        if (!audioWaveFormData) {
+      if (data.realtimeAudioWaveFormId) {
+        const realtimeAudioWaveFormData =
+          context.renderingDataMap[data.realtimeAudioWaveFormId];
+        if (!realtimeAudioWaveFormData) {
           throw new Error("cannot find audioWaveForm");
         }
 
-        if (audioWaveFormData.type !== "audioWaveForm") {
-          throw new Error("data is not audioWaveForm");
+        if (realtimeAudioWaveFormData.type !== "uint8AudioWaveForm") {
+          throw new Error("data is not uint8AudioWaveForm");
         }
 
         context.native.record.fillAudioWaveFormBuffer(
           data.id,
-          audioWaveFormData.buffer
+          realtimeAudioWaveFormData.buffer
         );
       }
 
@@ -247,7 +247,25 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
         break;
       }
       context.native.record.stopRecord(data.id);
-      data.state = "idle";
+      data.state = "finishing";
+      break;
+    }
+    case "finishing": {
+      const result = context.native.record.getResult(data.id);
+      if (!result) {
+        break;
+      }
+      const fullAudioWaveFormData =
+        context.renderingDataMap[data.fullAudioWaveFormId];
+      if (!fullAudioWaveFormData) {
+        throw new Error("cannot find audioWaveForm");
+      }
+
+      if (fullAudioWaveFormData.type !== "float32AudioWaveForm") {
+        throw new Error("data is not float32AudioWaveForm");
+      }
+      fullAudioWaveFormData.buffer = result.samples;
+      data.state = 'idle';
       break;
     }
   }

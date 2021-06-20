@@ -35,8 +35,9 @@ export type RecordOnClick = {
   type: "recordOnClick";
   id: number;
   buttonId: number;
-  state: "idle" | "initializing" | "recording";
-  audioWaveFormId: number;
+  state: "idle" | "initializing" | "recording" | "finishing";
+  realtimeAudioWaveFormId: number;
+  fullAudioWaveFormId: number;
 };
 
 export type MapRecordingStateToButtonText = {
@@ -62,7 +63,8 @@ export const updatingDataList: UpdatingDataList = [
     id: 0,
     buttonId: 0,
     state: "idle",
-    audioWaveFormId: 2,
+    realtimeAudioWaveFormId: 2,
+    fullAudioWaveFormId: 3,
   },
   {
     type: "mapRecordingStateToButtonText",

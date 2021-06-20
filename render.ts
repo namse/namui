@@ -1,9 +1,10 @@
 import {
-  AudioWaveForm,
   Button,
   Circle,
+  Float32AudioWaveForm,
   RenderingDataList,
   Text,
+  Uint8AudioWaveForm,
 } from "./renderingData";
 
 export function render(
@@ -28,9 +29,14 @@ export function render(
           renderButton(context, data);
         }
         break;
-      case "audioWaveForm":
+      case "uint8AudioWaveForm":
         {
-          renderAudioWaveForm(context, data);
+          renderUint8AudioWaveForm(context, data);
+        }
+        break;
+      case "float32AudioWaveForm":
+        {
+          renderFloat32AudioWaveForm(context, data);
         }
         break;
       default:
@@ -77,9 +83,9 @@ function renderButton(context: CanvasRenderingContext2D, data: Button) {
   renderText(context, data.text);
   context.translate(-data.position.x, -data.position.y);
 }
-function renderAudioWaveForm(
+function renderUint8AudioWaveForm(
   context: CanvasRenderingContext2D,
-  data: AudioWaveForm
+  data: Uint8AudioWaveForm
 ) {
   context.translate(data.position.x, data.position.y);
 
@@ -97,6 +103,40 @@ function renderAudioWaveForm(
     const x = i * sliceWidth;
     const v = data.buffer[i] / 128.0;
     const y = (v * data.height) / 2;
+
+    if (i === 0) {
+      context.moveTo(x, y);
+    } else {
+      context.lineTo(x, y);
+    }
+  }
+
+  context.lineTo(data.width, data.height / 2);
+  context.stroke();
+
+  context.translate(-data.position.x, -data.position.y);
+}
+
+function renderFloat32AudioWaveForm(
+  context: CanvasRenderingContext2D,
+  data: Float32AudioWaveForm
+) {
+  context.translate(data.position.x, data.position.y);
+
+  context.fillStyle = "rgb(200, 200, 200)";
+  context.fillRect(0, 0, data.width, data.height);
+
+  context.lineWidth = 2;
+  context.strokeStyle = "rgb(0, 0, 0)";
+
+  context.beginPath();
+
+  const sliceWidth = data.width / data.buffer.length;
+
+  for (let i = 0; i < data.buffer.length; i++) {
+    const x = i * sliceWidth;
+    const value = data.buffer[i];
+    const y = data.height * (value + 1) / 2;
 
     if (i === 0) {
       context.moveTo(x, y);

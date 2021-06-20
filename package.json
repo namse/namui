@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/dom-mediacapture-record": "^1.0.7",
-    "esbuild": "^0.12.9"
+    "esbuild": "^0.12.9",
+    "typescript": "^4.3.4"
   }
 }

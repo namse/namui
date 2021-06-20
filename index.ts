@@ -8,7 +8,7 @@ import { ClickInfo, update, UpdateContext } from "./update";
 import { updatingDataList } from "./updatingData";
 import { stateData } from "./stateData";
 import { Native } from "./native";
-import { record } from "./native-web/record";
+import { record } from "./native-web/record/record";
 
 const canvas = document.createElement("canvas");
 canvas.width = 500;
