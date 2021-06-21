@@ -1,4 +1,5 @@
 import {
+  AudioWaveformEditor,
   Button,
   Circle,
   Float32AudioWaveform,
@@ -37,6 +38,11 @@ export function render(
       case "float32AudioWaveform":
         {
           renderFloat32AudioWaveform(context, data);
+        }
+        break;
+      case "audioWaveformEditor":
+        {
+          renderAudioWaveformEditor(context, data);
         }
         break;
       default:
@@ -133,7 +139,7 @@ function renderUint8AudioWaveform(
 
 function renderFloat32AudioWaveform(
   context: CanvasRenderingContext2D,
-  data: Float32AudioWaveform
+  data: Omit<Float32AudioWaveform, "type">
 ) {
   context.translate(data.position.x, data.position.y);
 
@@ -143,36 +149,74 @@ function renderFloat32AudioWaveform(
   context.lineWidth = 2;
   context.strokeStyle = "rgb(0, 0, 0)";
 
-  context.beginPath();
+  if (data.buffer) {
+    context.beginPath();
 
-  if (data.buffer.length < data.width) {
-    const sliceWidth = data.width / data.buffer.length;
-    for (let i = 0; i < data.buffer.length; i++) {
-      const x = i * sliceWidth;
-      const value = data.buffer[i];
-      const y = (data.height * (value + 1)) / 2;
+    if (data.buffer.length < data.width) {
+      const sliceWidth = data.width / data.buffer.length;
+      for (let i = 0; i < data.buffer.length; i++) {
+        const x = i * sliceWidth;
+        const value = data.buffer[i];
+        const y = (data.height * (value + 1)) / 2;
 
-      if (i === 0) {
-        context.moveTo(x, y);
-      } else {
-        context.lineTo(x, y);
+        if (i === 0) {
+          context.moveTo(x, y);
+        } else {
+          context.lineTo(x, y);
+        }
+      }
+    } else {
+      for (let x = 0; x < data.width; x += 1) {
+        const index = Math.floor(data.buffer.length * (x / data.width));
+        const value = data.buffer[index];
+        const y = (data.height * (value + 1)) / 2;
+        if (x === 0) {
+          context.moveTo(x, y);
+        } else {
+          context.lineTo(x, y);
+        }
       }
     }
-  } else {
-    for (let x = 0; x < data.width; x += 1) {
-      const index = Math.floor(data.buffer.length * (x / data.width));
-      const value = data.buffer[index];
-      const y = (data.height * (value + 1)) / 2;
-      if (x === 0) {
-        context.moveTo(x, y);
-      } else {
-        context.lineTo(x, y);
-      }
-    }
+
+    context.lineTo(data.width, data.height / 2);
+    context.stroke();
   }
 
-  context.lineTo(data.width, data.height / 2);
-  context.stroke();
+  context.translate(-data.position.x, -data.position.y);
+}
+function renderAudioWaveformEditor(
+  context: CanvasRenderingContext2D,
+  data: AudioWaveformEditor
+) {
+  renderFloat32AudioWaveform(context, data);
+
+  context.translate(data.position.x, data.position.y);
+
+  if (data.highlightOn === "start") {
+    context.fillStyle = "rgb(255, 0, 0)";
+  } else {
+    context.fillStyle = "rgb(128, 0, 0)";
+  }
+
+  context.fillRect(
+    (data.width * data.startBarPercent) / 100 - data.barWidth / 2,
+    0,
+    data.barWidth,
+    data.height
+  );
+
+  if (data.highlightOn === "end") {
+    context.fillStyle = "rgb(255, 0, 0)";
+  } else {
+    context.fillStyle = "rgb(128, 0, 0)";
+  }
+
+  context.fillRect(
+    (data.width * data.endBarPercent) / 100 - data.barWidth / 2,
+    0,
+    data.barWidth,
+    data.height
+  );
 
   context.translate(-data.position.x, -data.position.y);
 }

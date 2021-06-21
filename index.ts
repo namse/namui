@@ -4,7 +4,7 @@ import {
   RenderingDataMap,
 } from "./renderingData";
 import { render } from "./render";
-import { ClickInfo, update, UpdateContext } from "./update";
+import { MouseInfo, update, UpdateContext } from "./update";
 import { updatingDataList } from "./updatingData";
 import { stateData } from "./stateData";
 import { Native } from "./native";
@@ -31,15 +31,37 @@ function toMap<TItem extends { id: number }>(
   return map;
 }
 
-let clickInfo: ClickInfo | undefined;
+let mouseInfo: MouseInfo | undefined;
 
-canvas.addEventListener("click", (event) => {
-  clickInfo = {
+canvas.addEventListener("mousemove", (event) => {
+  mouseInfo = {
+    isMouseDown: mouseInfo?.isMouseDown ?? false,
     position: {
       x: event.clientX,
       y: event.clientY,
     },
   };
+});
+canvas.addEventListener("mousedown", (event) => {
+  mouseInfo = {
+    isMouseDown: true,
+    position: {
+      x: event.clientX,
+      y: event.clientY,
+    },
+  };
+});
+canvas.addEventListener("mouseup", (event) => {
+  mouseInfo = {
+    isMouseDown: false,
+    position: {
+      x: event.clientX,
+      y: event.clientY,
+    },
+  };
+});
+canvas.addEventListener("mouseout", (event) => {
+  mouseInfo = undefined;
 });
 
 const native: Native = {
@@ -65,7 +87,7 @@ function onFrame(context: CanvasRenderingContext2D) {
     dataList: updatingDataList,
     renderingDataMap,
     updatingDataMap,
-    clickInfo,
+    mouseInfo: mouseInfo,
     newDataList: [],
     removingDataList: [],
     state: stateData,
@@ -76,7 +98,6 @@ function onFrame(context: CanvasRenderingContext2D) {
   update(updateContext);
   render(context, renderingDataList);
 
-  clickInfo = undefined;
   updateContext.removingDataList.forEach((removingData) => {
     const index = updatingDataList.indexOf(removingData);
     updatingDataList.splice(index, 1);

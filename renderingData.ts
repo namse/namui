@@ -75,7 +75,7 @@ export type Uint8AudioWaveform = {
 export type Float32AudioWaveform = {
   type: "float32AudioWaveform";
   id: number;
-  buffer: Float32Array;
+  buffer?: Float32Array;
   width: number;
   height: number;
   position: {
@@ -84,12 +84,29 @@ export type Float32AudioWaveform = {
   };
 };
 
+export type AudioWaveformEditor = {
+  type: "audioWaveformEditor";
+  id: number;
+  buffer?: Float32Array;
+  width: number;
+  height: number;
+  position: {
+    x: number;
+    y: number;
+  };
+  barWidth: number;
+  startBarPercent: number;
+  endBarPercent: number;
+  highlightOn: "nothing" | "start" | "end";
+};
+
 export type RenderingData =
   | Circle
   | Text
   | Button
   | Uint8AudioWaveform
-  | Float32AudioWaveform;
+  | Float32AudioWaveform
+  | AudioWaveformEditor;
 
 export type RenderingDataList = Array<RenderingData>;
 export type RenderingDataMap = { [id: number]: RenderingData };
@@ -138,7 +155,6 @@ export const renderingDataList: RenderingDataList = [
   {
     type: "float32AudioWaveform",
     id: 3,
-    buffer: new Float32Array(0),
     width: 300,
     height: 100,
     position: {
@@ -193,5 +209,19 @@ export const renderingDataList: RenderingDataList = [
       a: 1,
     },
     rotationAngle: 0,
+  },
+  {
+    type: "audioWaveformEditor",
+    id: 7,
+    width: 300,
+    height: 100,
+    position: {
+      x: 0,
+      y: 200,
+    },
+    barWidth: 10,
+    startBarPercent: 0,
+    endBarPercent: 100,
+    highlightOn: "nothing",
   },
 ];

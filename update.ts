@@ -1,4 +1,8 @@
-import { RenderingData, RenderingDataMap } from "./renderingData";
+import {
+  AudioWaveformEditor,
+  RenderingData,
+  RenderingDataMap,
+} from "./renderingData";
 import {
   AddAfterClick,
   MapRecordingStateToButtonText,
@@ -10,22 +14,24 @@ import {
   AudioWaveform,
   UpdatingData,
   FpsText,
+  ControlAudioWaveformEditor,
 } from "./updatingData";
 import { StateData } from "./stateData";
 import { Native } from "./native";
 
-export type ClickInfo = {
+export type MouseInfo = {
   position: {
     x: number;
     y: number;
   };
+  isMouseDown: boolean;
 };
 
 export type UpdateContext = {
   dataList: UpdatingDataList;
   updatingDataMap: UpdatingDataMap;
   renderingDataMap: RenderingDataMap;
-  clickInfo?: ClickInfo;
+  mouseInfo?: MouseInfo;
   newDataList: UpdatingDataList;
   removingDataList: UpdatingDataList;
   state: StateData;
@@ -62,6 +68,10 @@ export function update(context: UpdateContext) {
       }
       case "fpsText": {
         updateFpsText(context, data);
+        return;
+      }
+      case "controlAudioWaveformEditor": {
+        updateControlAudioWaveformEditor(context, data);
         return;
       }
       default: {
@@ -128,18 +138,34 @@ function updateRotation(context: UpdateContext, data: Rotation) {
   }
 }
 
+type Box = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+function checkPointInBox(point: Vector, box: Box): boolean {
+  return (
+    box.x <= point.x &&
+    point.x <= box.x + box.width &&
+    box.y <= point.y &&
+    point.y <= box.y + box.height
+  );
+}
+
 function checkPositionInRenderingData(
   renderingData: RenderingData,
   position: Vector
 ): boolean {
   switch (renderingData.type) {
     case "button": {
-      return (
-        renderingData.position.x <= position.x &&
-        position.x <= renderingData.position.x + renderingData.width &&
-        renderingData.position.y <= position.y &&
-        position.y <= renderingData.position.y + renderingData.height
-      );
+      return checkPointInBox(position, {
+        x: renderingData.position.x,
+        y: renderingData.position.y,
+        width: renderingData.width,
+        height: renderingData.height,
+      });
     }
     default: {
       return false;
@@ -151,7 +177,7 @@ function updateAddAfterClick(
   context: UpdateContext,
   data: AddAfterClick<Rotation>
 ) {
-  if (!context.clickInfo) {
+  if (!context.mouseInfo?.isMouseDown) {
     return;
   }
 
@@ -162,7 +188,7 @@ function updateAddAfterClick(
 
   const isClicked = checkPositionInRenderingData(
     target,
-    context.clickInfo.position
+    context.mouseInfo.position
   );
   if (!isClicked) {
     return;
@@ -237,12 +263,12 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
 
   switch (data.state) {
     case "idle": {
-      if (!context.clickInfo) {
+      if (!context.mouseInfo?.isMouseDown) {
         break;
       }
       const isClicked = checkPositionInRenderingData(
         recordButton,
-        context.clickInfo.position
+        context.mouseInfo.position
       );
       if (!isClicked) {
         break;
@@ -269,12 +295,12 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
         );
       }
 
-      if (!context.clickInfo) {
+      if (!context.mouseInfo?.isMouseDown) {
         break;
       }
       const isClicked = checkPositionInRenderingData(
         recordButton,
-        context.clickInfo.position
+        context.mouseInfo.position
       );
       if (!isClicked) {
         break;
@@ -361,14 +387,14 @@ function updateAudioWaveform(context: UpdateContext, data: AudioWaveform) {
     }
   }
 
-  if (!data.audioBuffer || !context.clickInfo) {
+  if (!data.audioBuffer || !context.mouseInfo?.isMouseDown) {
     return;
   }
 
   const playButton = getRenderingTarget(context, data.playButtonId, "button");
   const isClicked = checkPositionInRenderingData(
     playButton,
-    context.clickInfo.position
+    context.mouseInfo.position
   );
   if (!isClicked) {
     return;
@@ -381,4 +407,49 @@ function updateAudioWaveform(context: UpdateContext, data: AudioWaveform) {
 function updateFpsText(context: UpdateContext, data: FpsText) {
   const text = getRenderingTarget(context, data.textId, "text");
   text.content = context.fps.toString(10);
+}
+function updateControlAudioWaveformEditor(
+  context: UpdateContext,
+  data: ControlAudioWaveformEditor
+) {
+  const audioWaveformEditor = getRenderingTarget(
+    context,
+    data.audioWaveformEditorId,
+    "audioWaveformEditor"
+  );
+
+  if (context.mouseInfo) {
+    const startBarBox = getAudioWaveformEdtiorBarBox(
+      audioWaveformEditor,
+      "start"
+    );
+    const endBarBox = getAudioWaveformEdtiorBarBox(audioWaveformEditor, "end");
+    if (checkPointInBox(context.mouseInfo.position, startBarBox)) {
+      audioWaveformEditor.highlightOn = "start";
+    } else if (checkPointInBox(context.mouseInfo.position, endBarBox)) {
+      audioWaveformEditor.highlightOn = "end";
+    } else {
+      audioWaveformEditor.highlightOn = "nothing";
+    }
+  }
+  console.log(audioWaveformEditor.highlightOn);
+}
+
+function getAudioWaveformEdtiorBarBox(
+  audioWaveformEditor: AudioWaveformEditor,
+  bar: "start" | "end"
+): Box {
+  const barPercent =
+    bar === "start"
+      ? audioWaveformEditor.startBarPercent
+      : audioWaveformEditor.endBarPercent;
+  return {
+    x:
+      audioWaveformEditor.position.x +
+      (barPercent / 100) * audioWaveformEditor.width -
+      audioWaveformEditor.barWidth / 2,
+    y: audioWaveformEditor.position.y,
+    width: audioWaveformEditor.barWidth,
+    height: audioWaveformEditor.height,
+  };
 }

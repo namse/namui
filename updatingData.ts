@@ -1,3 +1,8 @@
+export type BaseUpdatingData = {
+  type: "";
+  id: number;
+};
+
 export type WithTarget = {
   targetId: number;
 };
@@ -63,6 +68,12 @@ export type FpsText = {
   textId: number;
 };
 
+export type ControlAudioWaveformEditor = {
+  type: "controlAudioWaveformEditor";
+  id: number;
+  audioWaveformEditorId: number;
+};
+
 export type UpdatingData =
   | Rotation
   | AddAfterClick<Rotation>
@@ -70,7 +81,9 @@ export type UpdatingData =
   | RecordOnClick
   | MapRecordingStateToButtonText
   | AudioWaveform
-  | FpsText;
+  | FpsText
+  | ControlAudioWaveformEditor
+  | BaseUpdatingData;
 
 export type UpdatingDataList = Array<UpdatingData>;
 export type UpdatingDataMap = { [id: number]: UpdatingData };
@@ -101,5 +114,10 @@ export const updatingDataList: UpdatingDataList = [
     type: "fpsText",
     id: 3,
     textId: 6,
+  },
+  {
+    type: "controlAudioWaveformEditor",
+    id: 4,
+    audioWaveformEditorId: 7,
   },
 ];
