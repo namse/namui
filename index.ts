@@ -35,6 +35,7 @@ let mouseInfo: MouseInfo | undefined;
 
 canvas.addEventListener("mousemove", (event) => {
   mouseInfo = {
+    isClick: mouseInfo?.isClick ?? false,
     isMouseDown: mouseInfo?.isMouseDown ?? false,
     position: {
       x: event.clientX,
@@ -44,6 +45,7 @@ canvas.addEventListener("mousemove", (event) => {
 });
 canvas.addEventListener("mousedown", (event) => {
   mouseInfo = {
+    isClick: !mouseInfo?.isClick,
     isMouseDown: true,
     position: {
       x: event.clientX,
@@ -53,6 +55,7 @@ canvas.addEventListener("mousedown", (event) => {
 });
 canvas.addEventListener("mouseup", (event) => {
   mouseInfo = {
+    isClick: false,
     isMouseDown: false,
     position: {
       x: event.clientX,
@@ -103,6 +106,10 @@ function onFrame(context: CanvasRenderingContext2D) {
     updatingDataList.splice(index, 1);
   });
   updatingDataList.push(...updateContext.newDataList);
+
+  if (mouseInfo) {
+    mouseInfo.isClick = false;
+  }
 
   requestAnimationFrame(() => onFrame(context));
 }

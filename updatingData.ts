@@ -1,5 +1,5 @@
 export type BaseUpdatingData = {
-  type: "";
+  type: "baseUpdatingData";
   id: number;
 };
 
@@ -43,13 +43,13 @@ export type RecordOnClick = {
   state: "idle" | "initializing" | "recording" | "finishing";
   realtimeAudioWaveformId?: number;
   realtimeAudioBuffer: Uint8Array;
-  audioWaveformId: number;
+  controlAudioWaveformEditorId: number;
 };
 
 export type AudioWaveform = {
   type: "audioWaveform";
   id: number;
-  audioWaveformId: number;
+  float32AudioWaveformId: number;
   audioBuffer?: Float32Array;
   playButtonId: number;
   playId?: number;
@@ -72,6 +72,8 @@ export type ControlAudioWaveformEditor = {
   type: "controlAudioWaveformEditor";
   id: number;
   audioWaveformEditorId: number;
+  audioWaveformId: number;
+  audioBuffer?: Float32Array;
   draging?: {
     bar: "start" | "end";
     anchorX: number;
@@ -100,7 +102,7 @@ export const updatingDataList: UpdatingDataList = [
     state: "idle",
     realtimeAudioWaveformId: 2,
     realtimeAudioBuffer: new Uint8Array(1024),
-    audioWaveformId: 2,
+    controlAudioWaveformEditorId: 4,
   },
   {
     type: "mapRecordingStateToButtonText",
@@ -111,7 +113,7 @@ export const updatingDataList: UpdatingDataList = [
   {
     type: "audioWaveform",
     id: 2,
-    audioWaveformId: 3,
+    float32AudioWaveformId: 3,
     playButtonId: 4,
   },
   {
@@ -123,5 +125,6 @@ export const updatingDataList: UpdatingDataList = [
     type: "controlAudioWaveformEditor",
     id: 4,
     audioWaveformEditorId: 7,
+    audioWaveformId: 2,
   },
 ];

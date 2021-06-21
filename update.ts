@@ -25,6 +25,7 @@ export type MouseInfo = {
     y: number;
   };
   isMouseDown: boolean;
+  isClick: boolean;
 };
 
 export type UpdateContext = {
@@ -177,7 +178,7 @@ function updateAddAfterClick(
   context: UpdateContext,
   data: AddAfterClick<Rotation>
 ) {
-  if (!context.mouseInfo?.isMouseDown) {
+  if (!context.mouseInfo?.isClick) {
     return;
   }
 
@@ -255,26 +256,22 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
     data.recordButtonId,
     "button"
   );
-  const audioWaveform = getUpdatingTarget(
+  const controlAudioWaveformEditor = getUpdatingTarget(
     context,
-    data.audioWaveformId,
-    "audioWaveform"
+    data.controlAudioWaveformEditorId,
+    "controlAudioWaveformEditor"
   );
 
   switch (data.state) {
     case "idle": {
-      if (!context.mouseInfo?.isMouseDown) {
-        break;
-      }
-      const isClicked = checkPositionInRenderingData(
-        recordButton,
-        context.mouseInfo.position
-      );
+      const isClicked =
+        context.mouseInfo?.isClick &&
+        checkPositionInRenderingData(recordButton, context.mouseInfo.position);
       if (!isClicked) {
         break;
       }
       data.state = "initializing";
-      audioWaveform.audioBuffer = undefined;
+      controlAudioWaveformEditor.audioBuffer = undefined;
       context.native.record.startInitializeRecord(data.id);
       break;
     }
@@ -295,13 +292,9 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
         );
       }
 
-      if (!context.mouseInfo?.isMouseDown) {
-        break;
-      }
-      const isClicked = checkPositionInRenderingData(
-        recordButton,
-        context.mouseInfo.position
-      );
+      const isClicked =
+        context.mouseInfo?.isClick &&
+        checkPositionInRenderingData(recordButton, context.mouseInfo.position);
       if (!isClicked) {
         break;
       }
@@ -314,7 +307,7 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
       if (!result) {
         break;
       }
-      audioWaveform.audioBuffer = result.samples;
+      controlAudioWaveformEditor.audioBuffer = result.samples;
       data.state = "idle";
       break;
     }
@@ -371,13 +364,13 @@ function updateMapRecordingStateToButtonText(
   }
 }
 function updateAudioWaveform(context: UpdateContext, data: AudioWaveform) {
-  if (data.audioWaveformId && data.audioBuffer) {
-    const audioWaveformData = getRenderingTarget(
+  if (data.float32AudioWaveformId && data.audioBuffer) {
+    const float32AudioWaveform = getRenderingTarget(
       context,
-      data.audioWaveformId,
+      data.float32AudioWaveformId,
       "float32AudioWaveform"
     );
-    audioWaveformData.buffer = data.audioBuffer;
+    float32AudioWaveform.buffer = data.audioBuffer;
   }
 
   if (data.playId) {
@@ -387,7 +380,7 @@ function updateAudioWaveform(context: UpdateContext, data: AudioWaveform) {
     }
   }
 
-  if (!data.audioBuffer || !context.mouseInfo?.isMouseDown) {
+  if (!data.audioBuffer || !context.mouseInfo?.isClick) {
     return;
   }
 
@@ -425,6 +418,26 @@ function updateControlAudioWaveformEditor(
     data,
     audioWaveformEditor
   );
+
+  audioWaveformEditor.buffer = data.audioBuffer;
+
+  const audioWaveform = getUpdatingTarget(
+    context,
+    data.audioWaveformId,
+    "audioWaveform"
+  );
+
+  if (data.audioBuffer) {
+    const begin = Math.floor(
+      (audioWaveformEditor.startBarPercent / 100) * data.audioBuffer.length
+    );
+    const end = Math.floor(
+      (audioWaveformEditor.endBarPercent / 100) * data.audioBuffer.length
+    );
+    audioWaveform.audioBuffer = data.audioBuffer.subarray(begin, end);
+  } else {
+    audioWaveform.audioBuffer = undefined;
+  }
 }
 
 function dragAudioWaveformEditorBar(
@@ -472,9 +485,14 @@ function dragAudioWaveformEditorBar(
   }
 
   const nextBarPercent =
-    ((nextBarX + audioWaveformEditor.barWidth / 2) /
-      audioWaveformEditor.width) *
-    100;
+    Math.min(
+      1,
+      Math.max(
+        0,
+        (nextBarX + audioWaveformEditor.barWidth / 2) /
+          audioWaveformEditor.width
+      )
+    ) * 100;
   if (data.draging.bar === "start") {
     audioWaveformEditor.startBarPercent = nextBarPercent;
   } else {
