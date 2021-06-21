@@ -99,15 +99,29 @@ function renderUint8AudioWaveForm(
 
   const sliceWidth = data.width / data.buffer.length;
 
+  if (data.buffer.length < data.width) {
+    const sliceWidth = data.width / data.buffer.length;
   for (let i = 0; i < data.buffer.length; i++) {
     const x = i * sliceWidth;
-    const v = data.buffer[i] / 128.0;
-    const y = (v * data.height) / 2;
+      const value = data.buffer[i] / 128.0;
+      const y = (value * data.height) / 2;
 
     if (i === 0) {
       context.moveTo(x, y);
     } else {
       context.lineTo(x, y);
+    }
+  }
+  } else {
+    for (let x = 0; x < data.width; x += 1) {
+      const index = Math.floor(data.buffer.length * (x / data.width));
+      const value = data.buffer[index] / 128.0;
+      const y = (value * data.height) / 2;
+      if (x === 0) {
+        context.moveTo(x, y);
+      } else {
+        context.lineTo(x, y);
+      }
     }
   }
 
@@ -131,17 +145,29 @@ function renderFloat32AudioWaveForm(
 
   context.beginPath();
 
+  if (data.buffer.length < data.width) {
   const sliceWidth = data.width / data.buffer.length;
-
   for (let i = 0; i < data.buffer.length; i++) {
     const x = i * sliceWidth;
     const value = data.buffer[i];
-    const y = data.height * (value + 1) / 2;
+      const y = (data.height * (value + 1)) / 2;
 
     if (i === 0) {
       context.moveTo(x, y);
     } else {
       context.lineTo(x, y);
+    }
+  }
+  } else {
+    for (let x = 0; x < data.width; x += 1) {
+      const index = Math.floor(data.buffer.length * (x / data.width));
+      const value = data.buffer[index];
+      const y = (data.height * (value + 1)) / 2;
+      if (x === 0) {
+        context.moveTo(x, y);
+      } else {
+        context.lineTo(x, y);
+      }
     }
   }
 
