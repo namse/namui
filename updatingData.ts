@@ -72,6 +72,10 @@ export type ControlAudioWaveformEditor = {
   type: "controlAudioWaveformEditor";
   id: number;
   audioWaveformEditorId: number;
+  draging?: {
+    bar: "start" | "end";
+    anchorX: number;
+  };
 };
 
 export type UpdatingData =

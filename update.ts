@@ -418,21 +418,102 @@ function updateControlAudioWaveformEditor(
     "audioWaveformEditor"
   );
 
-  if (context.mouseInfo) {
-    const startBarBox = getAudioWaveformEdtiorBarBox(
-      audioWaveformEditor,
-      "start"
-    );
-    const endBarBox = getAudioWaveformEdtiorBarBox(audioWaveformEditor, "end");
-    if (checkPointInBox(context.mouseInfo.position, startBarBox)) {
-      audioWaveformEditor.highlightOn = "start";
-    } else if (checkPointInBox(context.mouseInfo.position, endBarBox)) {
-      audioWaveformEditor.highlightOn = "end";
-    } else {
-      audioWaveformEditor.highlightOn = "nothing";
-    }
+  dragAudioWaveformEditorBar(context, data, audioWaveformEditor);
+
+  audioWaveformEditor.highlightOn = getHighlightOn(
+    context,
+    data,
+    audioWaveformEditor
+  );
+}
+
+function dragAudioWaveformEditorBar(
+  context: UpdateContext,
+  data: ControlAudioWaveformEditor,
+  audioWaveformEditor: AudioWaveformEditor
+) {
+  if (!context.mouseInfo?.isMouseDown) {
+    data.draging = undefined;
+    return;
   }
-  console.log(audioWaveformEditor.highlightOn);
+
+  const barMouseOn = getBarMouseOn(context, audioWaveformEditor);
+
+  if (!data.draging) {
+    if (barMouseOn === "nothing") {
+      return;
+    }
+    const barBox = getAudioWaveformEdtiorBarBox(
+      audioWaveformEditor,
+      barMouseOn
+    );
+    data.draging = {
+      bar: barMouseOn,
+      anchorX: context.mouseInfo.position.x - barBox.x,
+    };
+    return;
+  }
+
+  let nextBarX = context.mouseInfo.position.x - data.draging.anchorX;
+  const oppositeBarBox = getAudioWaveformEdtiorBarBox(
+    audioWaveformEditor,
+    data.draging.bar === "start" ? "end" : "start"
+  );
+  if (
+    data.draging.bar === "start" &&
+    !(nextBarX + audioWaveformEditor.barWidth < oppositeBarBox.x)
+  ) {
+    nextBarX = oppositeBarBox.x - audioWaveformEditor.barWidth - 1;
+  } else if (
+    data.draging.bar === "end" &&
+    !(oppositeBarBox.x + oppositeBarBox.width < nextBarX)
+  ) {
+    nextBarX = oppositeBarBox.x + oppositeBarBox.width + 1;
+  }
+
+  const nextBarPercent =
+    ((nextBarX + audioWaveformEditor.barWidth / 2) /
+      audioWaveformEditor.width) *
+    100;
+  if (data.draging.bar === "start") {
+    audioWaveformEditor.startBarPercent = nextBarPercent;
+  } else {
+    audioWaveformEditor.endBarPercent = nextBarPercent;
+  }
+}
+
+function getBarMouseOn(
+  context: UpdateContext,
+  audioWaveformEditor: AudioWaveformEditor
+): "start" | "end" | "nothing" {
+  if (!context.mouseInfo) {
+    return "nothing";
+  }
+  const startBarBox = getAudioWaveformEdtiorBarBox(
+    audioWaveformEditor,
+    "start"
+  );
+  if (checkPointInBox(context.mouseInfo.position, startBarBox)) {
+    return "start";
+  }
+
+  const endBarBox = getAudioWaveformEdtiorBarBox(audioWaveformEditor, "end");
+  if (checkPointInBox(context.mouseInfo.position, endBarBox)) {
+    return "end";
+  }
+
+  return "nothing";
+}
+
+function getHighlightOn(
+  context: UpdateContext,
+  data: ControlAudioWaveformEditor,
+  audioWaveformEditor: AudioWaveformEditor
+): AudioWaveformEditor["highlightOn"] {
+  if (data.draging?.bar) {
+    return data.draging.bar;
+  }
+  return getBarMouseOn(context, audioWaveformEditor);
 }
 
 function getAudioWaveformEdtiorBarBox(
