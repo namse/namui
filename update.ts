@@ -7,6 +7,9 @@ import {
   RecordOnClick,
   UpdatingDataList,
   UpdatingDataMap,
+  AudioWaveform,
+  UpdatingData,
+  FpsText,
 } from "./updatingData";
 import { StateData } from "./stateData";
 import { Native } from "./native";
@@ -27,6 +30,7 @@ export type UpdateContext = {
   removingDataList: UpdatingDataList;
   state: StateData;
   native: Native;
+  fps: number;
 };
 
 export function update(context: UpdateContext) {
@@ -50,6 +54,14 @@ export function update(context: UpdateContext) {
       }
       case "mapRecordingStateToButtonText": {
         updateMapRecordingStateToButtonText(context, data);
+        return;
+      }
+      case "audioWaveform": {
+        updateAudioWaveform(context, data);
+        return;
+      }
+      case "fpsText": {
+        updateFpsText(context, data);
         return;
       }
       default: {
@@ -183,7 +195,7 @@ function updateMove(context: UpdateContext, data: Move) {
   move(target, data);
 }
 
-function getTarget<
+function getRenderingTarget<
   TType extends RenderingData["type"],
   TData = Extract<RenderingData, { type: TType }>
 >(context: UpdateContext, id: number, type: TType): TData {
@@ -197,8 +209,31 @@ function getTarget<
   return target as unknown as TData;
 }
 
+function getUpdatingTarget<
+  TType extends UpdatingData["type"],
+  TData = Extract<UpdatingData, { type: TType }>
+>(context: UpdateContext, id: number, type: TType): TData {
+  const target = context.updatingDataMap[id];
+  if (!target) {
+    throw new Error(`cannot find ${id}`);
+  }
+  if (target.type !== type) {
+    throw new Error(`target is not ${type}`);
+  }
+  return target as unknown as TData;
+}
+
 function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
-  const recordButton = getTarget(context, data.recordButtonId, "button");
+  const recordButton = getRenderingTarget(
+    context,
+    data.recordButtonId,
+    "button"
+  );
+  const audioWaveform = getUpdatingTarget(
+    context,
+    data.audioWaveformId,
+    "audioWaveform"
+  );
 
   switch (data.state) {
     case "idle": {
@@ -213,7 +248,7 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
         break;
       }
       data.state = "initializing";
-      data.fullAudioBuffer = undefined;
+      audioWaveform.audioBuffer = undefined;
       context.native.record.startInitializeRecord(data.id);
       break;
     }
@@ -227,8 +262,8 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
       break;
     }
     case "recording": {
-      if (data.realtimeAudioWaveFormId) {
-        context.native.record.fillAudioWaveFormBuffer(
+      if (data.realtimeAudioWaveformId) {
+        context.native.record.fillAudioWaveformBuffer(
           data.id,
           data.realtimeAudioBuffer
         );
@@ -253,58 +288,20 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
       if (!result) {
         break;
       }
-      data.fullAudioBuffer = result.samples;
+      audioWaveform.audioBuffer = result.samples;
       data.state = "idle";
       break;
     }
   }
 
-  if (data.realtimeAudioWaveFormId) {
-    const realtimeAudioWaveFormData = getTarget(
+  if (data.realtimeAudioWaveformId) {
+    const realtimeAudioWaveformData = getRenderingTarget(
       context,
-      data.realtimeAudioWaveFormId,
-      "uint8AudioWaveForm"
+      data.realtimeAudioWaveformId,
+      "uint8AudioWaveform"
     );
-    realtimeAudioWaveFormData.buffer = data.realtimeAudioBuffer;
+    realtimeAudioWaveformData.buffer = data.realtimeAudioBuffer;
   }
-
-  if (data.fullAudioWaveFormId && data.fullAudioBuffer) {
-    const fullAudioWaveFormData = getTarget(
-      context,
-      data.fullAudioWaveFormId,
-      "float32AudioWaveForm"
-    );
-    fullAudioWaveFormData.buffer = data.fullAudioBuffer;
-  }
-
-  checkPlayRecord(context, data);
-}
-
-function checkPlayRecord(context: UpdateContext, data: RecordOnClick) {
-  if (data.playId) {
-    if (context.native.audioPlayer.isPlayFinished(data.playId)) {
-      context.native.audioPlayer.clearAudio(data.playId);
-      data.playId = undefined;
-    }
-  }
-
-  if (!data.fullAudioBuffer || !context.clickInfo) {
-    return;
-  }
-
-  const playButton = getTarget(context, data.playButtonId, "button");
-  const isClicked = checkPositionInRenderingData(
-    playButton,
-    context.clickInfo.position
-  );
-  if (!isClicked) {
-    return;
-  }
-
-  const { playId } = context.native.audioPlayer.playSamples(data.fullAudioBuffer);
-  // const { playId } = context.native.audioPlayer.play(data.fullAudioBuffer);
-  
-  data.playId = playId;
 }
 
 function updateMapRecordingStateToButtonText(
@@ -346,4 +343,42 @@ function updateMapRecordingStateToButtonText(
       break;
     }
   }
+}
+function updateAudioWaveform(context: UpdateContext, data: AudioWaveform) {
+  if (data.audioWaveformId && data.audioBuffer) {
+    const audioWaveformData = getRenderingTarget(
+      context,
+      data.audioWaveformId,
+      "float32AudioWaveform"
+    );
+    audioWaveformData.buffer = data.audioBuffer;
+  }
+
+  if (data.playId) {
+    if (context.native.audioPlayer.isPlayFinished(data.playId)) {
+      context.native.audioPlayer.clearAudio(data.playId);
+      data.playId = undefined;
+    }
+  }
+
+  if (!data.audioBuffer || !context.clickInfo) {
+    return;
+  }
+
+  const playButton = getRenderingTarget(context, data.playButtonId, "button");
+  const isClicked = checkPositionInRenderingData(
+    playButton,
+    context.clickInfo.position
+  );
+  if (!isClicked) {
+    return;
+  }
+
+  const { playId } = context.native.audioPlayer.playSamples(data.audioBuffer);
+
+  data.playId = playId;
+}
+function updateFpsText(context: UpdateContext, data: FpsText) {
+  const text = getRenderingTarget(context, data.textId, "text");
+  text.content = context.fps.toString(10);
 }

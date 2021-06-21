@@ -1,10 +1,10 @@
 import {
   Button,
   Circle,
-  Float32AudioWaveForm,
+  Float32AudioWaveform,
   RenderingDataList,
   Text,
-  Uint8AudioWaveForm,
+  Uint8AudioWaveform,
 } from "./renderingData";
 
 export function render(
@@ -29,14 +29,14 @@ export function render(
           renderButton(context, data);
         }
         break;
-      case "uint8AudioWaveForm":
+      case "uint8AudioWaveform":
         {
-          renderUint8AudioWaveForm(context, data);
+          renderUint8AudioWaveform(context, data);
         }
         break;
-      case "float32AudioWaveForm":
+      case "float32AudioWaveform":
         {
-          renderFloat32AudioWaveForm(context, data);
+          renderFloat32AudioWaveform(context, data);
         }
         break;
       default:
@@ -83,9 +83,9 @@ function renderButton(context: CanvasRenderingContext2D, data: Button) {
   renderText(context, data.text);
   context.translate(-data.position.x, -data.position.y);
 }
-function renderUint8AudioWaveForm(
+function renderUint8AudioWaveform(
   context: CanvasRenderingContext2D,
-  data: Uint8AudioWaveForm
+  data: Uint8AudioWaveform
 ) {
   context.translate(data.position.x, data.position.y);
 
@@ -101,17 +101,17 @@ function renderUint8AudioWaveForm(
 
   if (data.buffer.length < data.width) {
     const sliceWidth = data.width / data.buffer.length;
-  for (let i = 0; i < data.buffer.length; i++) {
-    const x = i * sliceWidth;
+    for (let i = 0; i < data.buffer.length; i++) {
+      const x = i * sliceWidth;
       const value = data.buffer[i] / 128.0;
       const y = (value * data.height) / 2;
 
-    if (i === 0) {
-      context.moveTo(x, y);
-    } else {
-      context.lineTo(x, y);
+      if (i === 0) {
+        context.moveTo(x, y);
+      } else {
+        context.lineTo(x, y);
+      }
     }
-  }
   } else {
     for (let x = 0; x < data.width; x += 1) {
       const index = Math.floor(data.buffer.length * (x / data.width));
@@ -131,9 +131,9 @@ function renderUint8AudioWaveForm(
   context.translate(-data.position.x, -data.position.y);
 }
 
-function renderFloat32AudioWaveForm(
+function renderFloat32AudioWaveform(
   context: CanvasRenderingContext2D,
-  data: Float32AudioWaveForm
+  data: Float32AudioWaveform
 ) {
   context.translate(data.position.x, data.position.y);
 
@@ -146,18 +146,18 @@ function renderFloat32AudioWaveForm(
   context.beginPath();
 
   if (data.buffer.length < data.width) {
-  const sliceWidth = data.width / data.buffer.length;
-  for (let i = 0; i < data.buffer.length; i++) {
-    const x = i * sliceWidth;
-    const value = data.buffer[i];
+    const sliceWidth = data.width / data.buffer.length;
+    for (let i = 0; i < data.buffer.length; i++) {
+      const x = i * sliceWidth;
+      const value = data.buffer[i];
       const y = (data.height * (value + 1)) / 2;
 
-    if (i === 0) {
-      context.moveTo(x, y);
-    } else {
-      context.lineTo(x, y);
+      if (i === 0) {
+        context.moveTo(x, y);
+      } else {
+        context.lineTo(x, y);
+      }
     }
-  }
   } else {
     for (let x = 0; x < data.width; x += 1) {
       const index = Math.floor(data.buffer.length * (x / data.width));

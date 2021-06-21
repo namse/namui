@@ -2,7 +2,6 @@ import { IRecord } from "../../native/Record";
 
 type RecordState = {
   mediaRecorder?: MediaRecorder;
-  analyserNode?: AnalyserNode;
   isInitializingError: boolean;
   chunks: Blob[];
   recordResult?: {
@@ -10,48 +9,64 @@ type RecordState = {
   };
 };
 
-export class Record implements IRecord {
+class Record implements IRecord {
   private readonly recordingStates: {
     [id: number]: RecordState;
   } = {};
 
-  startInitializeRecord(id: number): void {
-    const state: RecordState = {
-      isInitializingError: false,
-      chunks: [],
-    };
+  private static sharedAudio?: {
+    audioContext: AudioContext;
+    audioStream: MediaStream;
+    analyser: AnalyserNode;
+  };
 
-    if (this.recordingStates[id]?.mediaRecorder?.state === "recording") {
-      this.recordingStates[id].mediaRecorder?.stop();
-    }
+  async startInitializeRecord(id: number): Promise<void> {
+    try {
+      const previousState = this.recordingStates[id];
+      if (previousState) {
+        if (previousState.mediaRecorder?.state === "recording") {
+          previousState.mediaRecorder?.stop();
+        }
+      }
 
-    this.recordingStates[id] = state;
+      const state: RecordState = {
+        isInitializingError: false,
+        chunks: [],
+      };
+      this.recordingStates[id] = state;
 
-    navigator.mediaDevices
-      .getUserMedia({
-        audio: true,
-      })
-      .then((stream) => {
-        const mediaRecorder = new MediaRecorder(stream);
-        state.mediaRecorder = mediaRecorder;
-        mediaRecorder.ondataavailable = (event) => {
-          state.chunks.push(event.data);
-        };
+      if (!Record.sharedAudio) {
         const audioContext = new AudioContext();
-        const source = audioContext.createMediaStreamSource(stream);
+        const audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        const source = audioContext.createMediaStreamSource(audioStream);
         const analyser = audioContext.createAnalyser();
-        state.analyserNode = analyser;
         source.connect(analyser);
-      })
-      .catch((error) => {
-        console.error(error);
-        this.recordingStates[id].isInitializingError = true;
-      });
+        Record.sharedAudio = {
+          audioContext,
+          audioStream,
+          analyser,
+        };
+      }
+      const { audioStream } = Record.sharedAudio;
+      const mediaRecorder = new MediaRecorder(audioStream);
+      state.mediaRecorder = mediaRecorder;
+      mediaRecorder.ondataavailable = (event) => {
+        state.chunks.push(event.data);
+      };
+    } catch {
+      this.recordingStates[id].isInitializingError = true;
+    }
   }
   startRecord(id: number): void {
     this.recordingStates[id].mediaRecorder?.start(1000);
   }
   stopRecord(id: number): void {
+    if (!Record.sharedAudio) {
+      throw new Error("sharedAudio not initialized");
+    }
+    const { audioContext } = Record.sharedAudio;
     const state = this.recordingStates[id];
     const { mediaRecorder, chunks } = state;
     if (!mediaRecorder) {
@@ -59,7 +74,6 @@ export class Record implements IRecord {
     }
     mediaRecorder.onstop = async () => {
       const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
-      const audioContext = new AudioContext();
       const arrayBuffer = await blob.arrayBuffer();
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       const samples = audioBuffer.getChannelData(0);
@@ -76,12 +90,12 @@ export class Record implements IRecord {
     }
     return !!this.recordingStates[id].isInitializingError;
   }
-  fillAudioWaveFormBuffer(id: number, buffer: Uint8Array) {
-    const { analyserNode } = this.recordingStates[id];
-    if (!analyserNode) {
-      throw new Error("cannot find analyserNode");
+  fillAudioWaveformBuffer(id: number, buffer: Uint8Array) {
+    if (!Record.sharedAudio) {
+      throw new Error("sharedAudio not initialized");
     }
-    analyserNode.getByteTimeDomainData(buffer);
+    const { analyser } = Record.sharedAudio;
+    analyser.getByteTimeDomainData(buffer);
   }
   getResult(id: number): { samples: Float32Array } | undefined {
     return this.recordingStates[id]?.recordResult;

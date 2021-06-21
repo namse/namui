@@ -18,7 +18,7 @@ document.body.appendChild(canvas);
 
 const context = canvas.getContext("2d");
 if (!context) {
-  throw new Error('fail to get canvas 2d context');
+  throw new Error("fail to get canvas 2d context");
 }
 
 function toMap<TItem extends { id: number }>(
@@ -47,7 +47,15 @@ const native: Native = {
   audioPlayer,
 };
 
+let fps: number = 0;
+let frameCount = 0;
+setInterval(() => {
+  fps = frameCount;
+  frameCount = 0;
+}, 1000);
+
 function onFrame(context: CanvasRenderingContext2D) {
+  frameCount++;
   context.clearRect(0, 0, canvas.width, canvas.height);
 
   const renderingDataMap = toMap(renderingDataList);
@@ -62,6 +70,7 @@ function onFrame(context: CanvasRenderingContext2D) {
     removingDataList: [],
     state: stateData,
     native,
+    fps,
   };
 
   update(updateContext);
