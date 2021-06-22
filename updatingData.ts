@@ -80,6 +80,16 @@ export type ControlAudioWaveformEditor = {
   };
 };
 
+export type SaveAudioOnClickButton = {
+  type: "saveAudioOnClickButton";
+  id: number;
+  buttonId: number;
+  audioWaveformId: number;
+  filename: string;
+  isSaving: boolean;
+  savingId?: number;
+};
+
 export type UpdatingData =
   | Rotation
   | AddAfterClick<Rotation>
@@ -89,6 +99,7 @@ export type UpdatingData =
   | AudioWaveform
   | FpsText
   | ControlAudioWaveformEditor
+  | SaveAudioOnClickButton
   | BaseUpdatingData;
 
 export type UpdatingDataList = Array<UpdatingData>;
@@ -126,5 +137,13 @@ export const updatingDataList: UpdatingDataList = [
     id: 4,
     audioWaveformEditorId: 7,
     audioWaveformId: 2,
+  },
+  {
+    type: "saveAudioOnClickButton",
+    id: 5,
+    buttonId: 8,
+    audioWaveformId: 2,
+    isSaving: false,
+    filename: "test.wav",
   },
 ];

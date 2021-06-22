@@ -49,7 +49,7 @@ export type Button = {
   };
   width: number;
   height: number;
-  text: Text;
+  text: Omit<Text, "id">;
 };
 
 export type Audio = {
@@ -138,7 +138,6 @@ export const renderingDataList: RenderingDataList = [
     },
     text: {
       type: "text",
-      id: 1,
       align: "center",
       textBaseline: "middle",
       content: "Start!",
@@ -190,7 +189,6 @@ export const renderingDataList: RenderingDataList = [
     },
     text: {
       type: "text",
-      id: 5,
       align: "center",
       textBaseline: "middle",
       content: "play",
@@ -240,5 +238,33 @@ export const renderingDataList: RenderingDataList = [
     startBarPercent: 0,
     endBarPercent: 100,
     highlightOn: "nothing",
+  },
+  {
+    type: "button",
+    id: 8,
+    width: 40,
+    height: 20,
+    position: {
+      x: 300,
+      y: 180,
+    },
+    text: {
+      type: "text",
+      align: "center",
+      textBaseline: "middle",
+      content: "save",
+      fontSize: 10,
+      position: {
+        x: 20,
+        y: 10,
+      },
+      color: {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 1,
+      },
+      rotationAngle: 0,
+    },
   },
 ];

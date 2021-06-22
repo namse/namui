@@ -10,6 +10,7 @@ import { stateData } from "./stateData";
 import { Native } from "./native";
 import { record } from "./native-web/record/Record";
 import { audioPlayer } from "./native-web/AudioPlayer";
+import { audioNetwork } from "./native-web/audioNetwork/AudioNetwork";
 
 const canvas = document.createElement("canvas");
 canvas.width = 500;
@@ -70,6 +71,7 @@ canvas.addEventListener("mouseout", (event) => {
 const native: Native = {
   record,
   audioPlayer,
+  audioNetwork,
 };
 
 let fps: number = 0;

@@ -15,6 +15,7 @@ import {
   UpdatingData,
   FpsText,
   ControlAudioWaveformEditor,
+  SaveAudioOnClickButton,
 } from "./updatingData";
 import { StateData } from "./stateData";
 import { Native } from "./native";
@@ -73,6 +74,10 @@ export function update(context: UpdateContext) {
       }
       case "controlAudioWaveformEditor": {
         updateControlAudioWaveformEditor(context, data);
+        return;
+      }
+      case "saveAudioOnClickButton": {
+        updateSaveAudioOnClickButton(context, data);
         return;
       }
       default: {
@@ -554,4 +559,48 @@ function getAudioWaveformEdtiorBarBox(
     width: audioWaveformEditor.barWidth,
     height: audioWaveformEditor.height,
   };
+}
+function updateSaveAudioOnClickButton(
+  context: UpdateContext,
+  data: SaveAudioOnClickButton
+) {
+  const audioWaveform = getUpdatingTarget(
+    context,
+    data.audioWaveformId,
+    "audioWaveform"
+  );
+  const { audioBuffer } = audioWaveform;
+  if (!audioBuffer) {
+    return;
+  }
+
+  const button = getRenderingTarget(context, data.buttonId, "button");
+
+  if (
+    data.isSaving &&
+    data.savingId &&
+    context.native.audioNetwork.isSaveFinished(data.savingId)
+  ) {
+    data.savingId = undefined;
+    data.isSaving = false;
+  }
+
+  if (data.isSaving) {
+    button.text.content = "...";
+  } else {
+    button.text.content = "save";
+  }
+
+  if (
+    context.mouseInfo?.isClick &&
+    checkPositionInRenderingData(button, context.mouseInfo.position) &&
+    !data.isSaving
+  ) {
+    const { savingId } = context.native.audioNetwork.saveFloat32PcmAudio(
+      audioBuffer,
+      data.filename
+    );
+    data.isSaving = true;
+    data.savingId = savingId;
+  }
 }

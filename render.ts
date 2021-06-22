@@ -77,7 +77,7 @@ function renderCircle(context: CanvasRenderingContext2D, data: Circle): void {
   context.fill();
 }
 
-function renderText(context: CanvasRenderingContext2D, data: Text) {
+function renderText(context: CanvasRenderingContext2D, data: Omit<Text, "id">) {
   context.textAlign = data.align;
   context.textBaseline = data.textBaseline;
   context.font = `${data.fontSize}px`;
