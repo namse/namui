@@ -364,19 +364,22 @@ function updateMapRecordingStateToButtonText(
   }
 }
 function updateAudioWaveform(context: UpdateContext, data: AudioWaveform) {
-  if (data.float32AudioWaveformId && data.audioBuffer) {
-    const float32AudioWaveform = getRenderingTarget(
-      context,
-      data.float32AudioWaveformId,
-      "float32AudioWaveform"
-    );
-    float32AudioWaveform.buffer = data.audioBuffer;
+  const float32AudioWaveformPlayer = getRenderingTarget(
+    context,
+    data.float32AudioWaveformPlayerId,
+    "float32AudioWaveformPlayer"
+  );
+  if (data.float32AudioWaveformPlayerId && data.audioBuffer) {
+    float32AudioWaveformPlayer.buffer = data.audioBuffer;
   }
 
   if (data.playId) {
     if (context.native.audioPlayer.isPlayFinished(data.playId)) {
       context.native.audioPlayer.clearAudio(data.playId);
       data.playId = undefined;
+    } else {
+      float32AudioWaveformPlayer.playBarXRatio =
+        context.native.audioPlayer.getPlaybackTimeRate(data.playId);
     }
   }
 

@@ -49,7 +49,7 @@ export type RecordOnClick = {
 export type AudioWaveform = {
   type: "audioWaveform";
   id: number;
-  float32AudioWaveformId: number;
+  float32AudioWaveformPlayerId: number;
   audioBuffer?: Float32Array;
   playButtonId: number;
   playId?: number;
@@ -113,7 +113,7 @@ export const updatingDataList: UpdatingDataList = [
   {
     type: "audioWaveform",
     id: 2,
-    float32AudioWaveformId: 3,
+    float32AudioWaveformPlayerId: 3,
     playButtonId: 4,
   },
   {

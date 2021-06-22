@@ -3,4 +3,5 @@ export interface IAudioPlayer {
   isPlayFinished(playId: number): boolean;
   play(url: string): { playId: number };
   playSamples(samples: Float32Array): { playId: number };
+  getPlaybackTimeRate(playId: number): number;
 }

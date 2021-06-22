@@ -84,6 +84,20 @@ export type Float32AudioWaveform = {
   };
 };
 
+export type Float32AudioWaveformPlayer = {
+  type: "float32AudioWaveformPlayer";
+  id: number;
+  buffer?: Float32Array;
+  width: number;
+  height: number;
+  position: {
+    x: number;
+    y: number;
+  };
+  playBarXRatio: number;
+  playBarWidth: number;
+};
+
 export type AudioWaveformEditor = {
   type: "audioWaveformEditor";
   id: number;
@@ -106,7 +120,8 @@ export type RenderingData =
   | Button
   | Uint8AudioWaveform
   | Float32AudioWaveform
-  | AudioWaveformEditor;
+  | AudioWaveformEditor
+  | Float32AudioWaveformPlayer;
 
 export type RenderingDataList = Array<RenderingData>;
 export type RenderingDataMap = { [id: number]: RenderingData };
@@ -153,7 +168,7 @@ export const renderingDataList: RenderingDataList = [
     },
   },
   {
-    type: "float32AudioWaveform",
+    type: "float32AudioWaveformPlayer",
     id: 3,
     width: 300,
     height: 100,
@@ -161,6 +176,8 @@ export const renderingDataList: RenderingDataList = [
       x: 0,
       y: 100,
     },
+    playBarWidth: 5,
+    playBarXRatio: 0,
   },
   {
     type: "button",

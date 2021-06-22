@@ -2,6 +2,8 @@ import { IAudioPlayer } from "../native/AudioPlayer";
 
 type AudioPlayingContext = {
   isPlaying: boolean;
+  durationSecond: number;
+  getPlaytimeSecond: () => number;
   stop: () => void;
 };
 
@@ -11,8 +13,12 @@ class AudioPlayer implements IAudioPlayer {
     {};
   play(url: string): { playId: number } {
     const audio = new Audio(url);
-    const playingContext = {
+    const playingContext: AudioPlayingContext = {
       isPlaying: false,
+      durationSecond: audio.duration,
+      getPlaytimeSecond: () => {
+        return audio.currentTime;
+      },
       stop: () => {
         audio.pause();
       },
@@ -40,20 +46,22 @@ class AudioPlayer implements IAudioPlayer {
     buffer.copyToChannel(samples, 0);
     source.buffer = buffer;
     source.connect(context.destination);
-    const playingContext = {
+    let startTimeSecond: number = 0;
+    const playingContext: AudioPlayingContext = {
       isPlaying: false,
+      durationSecond: buffer.duration,
+      getPlaytimeSecond: () => {
+        return context.currentTime - startTimeSecond;
+      },
       stop: () => {
         source.stop();
       },
     };
     source.onended = () => {
-      console.log("ended");
       playingContext.isPlaying = false;
     };
-    context.onstatechange = (event) => {
-      console.log(event);
-    };
     source.start();
+    startTimeSecond = context.currentTime;
     playingContext.isPlaying = true;
 
     const playId = AudioPlayer.nextPlayId++;
@@ -65,10 +73,23 @@ class AudioPlayer implements IAudioPlayer {
   }
   isPlayFinished(playId: number): boolean {
     const audio = this.playingContexts[playId];
-    return !audio || audio.isPlaying;
+    return !audio?.isPlaying;
   }
   clearAudio(playId: number): void {
     delete this.playingContexts[playId];
+  }
+  getPlaybackTimeRate(playId: number): number {
+    const playingContext = this.playingContexts[playId];
+    if (!playingContext) {
+      throw new Error(`cannot get playingContext for playId ${playId}`);
+    }
+    return Math.max(
+      0,
+      Math.min(
+        1,
+        playingContext.getPlaytimeSecond() / playingContext.durationSecond
+      )
+    );
   }
 }
 
