@@ -114,6 +114,27 @@ export type AudioWaveformEditor = {
   highlightOn: "nothing" | "start" | "end";
 };
 
+export type TextBox = {
+  type: "textBox";
+  id: number;
+  align: "left" | "center" | "right";
+  textBaseline: "bottom" | "middle" | "top";
+  position: {
+    x: number;
+    y: number;
+  };
+  width: number;
+  height: number;
+  fontSize: number;
+  content: string;
+  color: {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+  };
+};
+
 export type RenderingData =
   | Circle
   | Text
@@ -121,7 +142,8 @@ export type RenderingData =
   | Uint8AudioWaveform
   | Float32AudioWaveform
   | AudioWaveformEditor
-  | Float32AudioWaveformPlayer;
+  | Float32AudioWaveformPlayer
+  | TextBox;
 
 export type RenderingDataList = Array<RenderingData>;
 export type RenderingDataMap = { [id: number]: RenderingData };
@@ -265,6 +287,27 @@ export const renderingDataList: RenderingDataList = [
         a: 1,
       },
       rotationAngle: 0,
+    },
+  },
+  {
+    type: "textBox",
+    id: 9,
+    align: "left",
+    textBaseline: "top",
+    content:
+      "안녕하세요저는멀티라인이에요\n다들만나서\n\n반갑습니다요.\n there a way to set ",
+    fontSize: 14,
+    position: {
+      x: 10,
+      y: 500,
+    },
+    width: 100,
+    height: 80,
+    color: {
+      r: 0,
+      g: 0,
+      b: 0,
+      a: 1,
     },
   },
 ];

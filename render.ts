@@ -6,6 +6,7 @@ import {
   Float32AudioWaveformPlayer,
   RenderingDataList,
   Text,
+  TextBox,
   Uint8AudioWaveform,
 } from "./renderingData";
 
@@ -49,6 +50,11 @@ export function render(
       case "float32AudioWaveformPlayer":
         {
           renderFloat32AudioWaveformPlayer(context, data);
+        }
+        break;
+      case "textBox":
+        {
+          renderTextBox(context, data);
         }
         break;
       default:
@@ -239,4 +245,79 @@ function renderFloat32AudioWaveformPlayer(
   context.fillRect(barX, 0, data.playBarWidth, data.height);
 
   context.translate(-data.position.x, -data.position.y);
+}
+function getOneLineFitTextInfo(
+  context: CanvasRenderingContext2D,
+  text: string,
+  boxWidth: number
+): {
+  textLength: number;
+} {
+  if (context.measureText(text).width <= boxWidth) {
+    return {
+      textLength: text.length,
+    };
+  }
+
+  let left = 0;
+  let right = text.length - 1;
+  while (left < right) {
+    const mid = Math.ceil((left + right) / 2);
+    const substring = text.substring(0, mid);
+    if (context.measureText(substring).width > boxWidth) {
+      right = mid - 1;
+    } else {
+      left = mid;
+    }
+  }
+
+  // Debug
+  if (context.measureText(text.substring(0, left)).width > boxWidth) {
+    console.log(text, left, right);
+  }
+
+  return {
+    textLength: left,
+  };
+}
+function renderTextBox(context: CanvasRenderingContext2D, data: TextBox) {
+  context.save();
+  context.translate(data.position.x, data.position.y);
+
+  context.fillStyle = "black";
+  context.strokeRect(0, 0, data.width, data.height);
+
+  context.beginPath();
+  context.rect(0, 0, data.width, data.height);
+  context.clip();
+
+  context.font = `${data.fontSize}px sans-serif`;
+  context.textAlign = data.align;
+  context.textBaseline = data.textBaseline;
+
+  const lineFedTexts = data.content.split("\n");
+  let lineIndex = 0;
+  let lineFedTextIndex = 0;
+  let text = lineFedTexts[lineFedTextIndex];
+
+  while (lineFedTextIndex < lineFedTexts.length) {
+    const { textLength } = getOneLineFitTextInfo(context, text, data.width);
+    context.fillText(
+      text.substring(0, textLength),
+      0,
+      lineIndex * data.fontSize
+    );
+    lineIndex += 1;
+    if (lineIndex * data.fontSize > data.height) {
+      break;
+    }
+    if (text.length === textLength) {
+      // next line
+      text = lineFedTexts[++lineFedTextIndex];
+    } else {
+      text = text.substring(textLength);
+    }
+  }
+
+  context.restore();
 }
