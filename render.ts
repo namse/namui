@@ -80,7 +80,7 @@ function renderCircle(context: CanvasRenderingContext2D, data: Circle): void {
 function renderText(context: CanvasRenderingContext2D, data: Omit<Text, "id">) {
   context.textAlign = data.align;
   context.textBaseline = data.textBaseline;
-  context.font = `${data.fontSize}px`;
+  context.font = `${data.fontSize}px sans-serif`;
   context.fillStyle = `rgba(${data.color.r}, ${data.color.g}, ${data.color.b}, ${data.color.a})`;
   context.translate(+data.position.x, +data.position.y);
   context.rotate(data.rotationAngle);
