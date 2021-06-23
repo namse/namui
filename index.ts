@@ -12,10 +12,25 @@ import { record } from "./native-web/record/Record";
 import { audioPlayer } from "./native-web/AudioPlayer";
 import { audioNetwork } from "./native-web/audioNetwork/AudioNetwork";
 
+function setupCanvasDpi(canvas: HTMLCanvasElement) {
+  // Get the device pixel ratio, falling back to 1.
+  const dpr = window.devicePixelRatio || 1;
+  // Get the size of the canvas in CSS pixels.
+  const rect = canvas.getBoundingClientRect();
+  // Give the canvas pixel dimensions of their CSS
+  // size * the device pixel ratio.
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext("2d");
+  // Scale all drawing operations by the dpr, so you
+  // don't have to worry about the difference.
+  ctx?.scale(dpr, dpr);
+}
 const canvas = document.createElement("canvas");
-canvas.width = 500;
-canvas.height = 500;
+canvas.width = 1000;
+canvas.height = 1000;
 document.body.appendChild(canvas);
+setupCanvasDpi(canvas);
 
 const context = canvas.getContext("2d");
 if (!context) {
