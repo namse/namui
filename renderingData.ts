@@ -127,7 +127,13 @@ export type TextBox = {
   height: number;
   fontSize: number;
   content: string;
-  color: {
+  textColor: {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+  };
+  borderColor: {
     r: number;
     g: number;
     b: number;
@@ -294,20 +300,25 @@ export const renderingDataList: RenderingDataList = [
     id: 9,
     align: "left",
     textBaseline: "top",
-    content:
-      "안녕하세요저는멀티라인이에요\n다들만나서\n\n반갑습니다요.\n there a way to set ",
+    content: "",
     fontSize: 14,
     position: {
-      x: 10,
+      x: 460,
       y: 500,
     },
-    width: 100,
-    height: 80,
-    color: {
+    width: 1000,
+    height: 400,
+    textColor: {
       r: 0,
       g: 0,
       b: 0,
       a: 1,
+    },
+    borderColor: {
+      r: 0,
+      g: 0,
+      b: 0,
+      a: 0,
     },
   },
 ];

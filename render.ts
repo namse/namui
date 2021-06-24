@@ -284,7 +284,7 @@ function renderTextBox(context: CanvasRenderingContext2D, data: TextBox) {
   context.save();
   context.translate(data.position.x, data.position.y);
 
-  context.fillStyle = "black";
+  context.strokeStyle = `rgba(${data.borderColor.r}, ${data.borderColor.g}, ${data.borderColor.b}, ${data.borderColor.a})`;
   context.strokeRect(0, 0, data.width, data.height);
 
   context.beginPath();
@@ -292,6 +292,7 @@ function renderTextBox(context: CanvasRenderingContext2D, data: TextBox) {
   context.clip();
 
   context.font = `${data.fontSize}px sans-serif`;
+  context.fillStyle = `rgba(${data.textColor.r}, ${data.textColor.g}, ${data.textColor.b}, ${data.textColor.a})`;
   context.textAlign = data.align;
   context.textBaseline = data.textBaseline;
 

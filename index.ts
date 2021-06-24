@@ -27,8 +27,8 @@ function setupCanvasDpi(canvas: HTMLCanvasElement) {
   ctx?.scale(dpr, dpr);
 }
 const canvas = document.createElement("canvas");
-canvas.width = 1000;
-canvas.height = 1000;
+canvas.width = 1920;
+canvas.height = 1080;
 document.body.appendChild(canvas);
 setupCanvasDpi(canvas);
 

@@ -16,6 +16,7 @@ import {
   FpsText,
   ControlAudioWaveformEditor,
   SaveAudioOnClickButton,
+  ViewScene,
 } from "./updatingData";
 import { StateData } from "./stateData";
 import { Native } from "./native";
@@ -78,6 +79,10 @@ export function update(context: UpdateContext) {
       }
       case "saveAudioOnClickButton": {
         updateSaveAudioOnClickButton(context, data);
+        return;
+      }
+      case "viewScene": {
+        updateViewScene(context, data);
         return;
       }
       default: {
@@ -603,4 +608,9 @@ function updateSaveAudioOnClickButton(
     data.isSaving = true;
     data.savingId = savingId;
   }
+}
+function updateViewScene(context: UpdateContext, data: ViewScene) {
+  const textBox = getRenderingTarget(context, data.textBoxId, "textBox");
+  const text = data.sceneDataList[data.sceneIndex].text;
+  textBox.content = text;
 }
