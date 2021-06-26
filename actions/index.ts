@@ -2,11 +2,9 @@ import {
   updateRotation,
   updateAddAfterClick,
   updateMove,
-  updateRecordOnclick,
   updateMapRecordingStateToButtonText,
   updateAudioWaveform,
   updateFpsText,
-  updateControlAudioWaveformEditor,
   updateSaveAudioOnClickButton,
 } from "./etc";
 import { UpdateContext } from "./type";
@@ -27,10 +25,6 @@ export function actAll(context: UpdateContext) {
         updateMove(context, data);
         return;
       }
-      case "recordOnClick": {
-        updateRecordOnclick(context, data);
-        return;
-      }
       case "mapRecordingStateToButtonText": {
         updateMapRecordingStateToButtonText(context, data);
         return;
@@ -41,10 +35,6 @@ export function actAll(context: UpdateContext) {
       }
       case "fpsText": {
         updateFpsText(context, data);
-        return;
-      }
-      case "controlAudioWaveformEditor": {
-        updateControlAudioWaveformEditor(context, data);
         return;
       }
       case "saveAudioOnClickButton": {

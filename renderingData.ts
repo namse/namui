@@ -48,6 +48,7 @@ export type Text = {
 export type Button = {
   type: "button";
   id: number;
+  isHidden: boolean;
   position: {
     x: number;
     y: number;
@@ -225,6 +226,7 @@ export const renderingDataList: RenderingDataList = [
   {
     type: "button",
     id: 10,
+    isHidden: false,
     width: 90,
     height: 60,
     position: {
@@ -252,6 +254,7 @@ export const renderingDataList: RenderingDataList = [
   {
     type: "button",
     id: 11,
+    isHidden: false,
     width: 90,
     height: 60,
     position: {
@@ -279,6 +282,7 @@ export const renderingDataList: RenderingDataList = [
   {
     type: "button",
     id: 12,
+    isHidden: false,
     width: 90,
     height: 60,
     position: {
@@ -306,6 +310,7 @@ export const renderingDataList: RenderingDataList = [
   {
     type: "button",
     id: 13,
+    isHidden: false,
     width: 90,
     height: 60,
     position: {
@@ -352,7 +357,7 @@ export const renderingDataList: RenderingDataList = [
       x: 500,
       y: 500,
     },
-    barWidth: 5,
+    barWidth: 10,
     endBarPercent: 100,
     startBarPercent: 0,
     highlightOn: "nothing",
@@ -366,6 +371,34 @@ export const renderingDataList: RenderingDataList = [
     position: {
       x: 500,
       y: 500,
+    },
+  },
+  {
+    type: "button",
+    id: 17,
+    isHidden: true,
+    width: 90,
+    height: 60,
+    position: {
+      x: 1920 - 500 - 90,
+      y: 600,
+    },
+    text: {
+      align: "center",
+      textBaseline: "middle",
+      content: "save record",
+      fontSize: 16,
+      position: {
+        x: 45,
+        y: 30,
+      },
+      color: {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 1,
+      },
+      rotationAngle: 0,
     },
   },
 ];

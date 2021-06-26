@@ -110,6 +110,9 @@ function renderText(
 }
 
 function renderButton(context: CanvasRenderingContext2D, data: Button) {
+  if (data.isHidden) {
+    return;
+  }
   context.strokeStyle = "1px black";
   context.strokeRect(data.position.x, data.position.y, data.width, data.height);
   context.translate(data.position.x, data.position.y);
@@ -129,8 +132,6 @@ function renderUint8AudioWaveform(
   context.strokeStyle = "rgb(0, 0, 0)";
 
   context.beginPath();
-
-  const sliceWidth = data.width / data.buffer.length;
 
   if (data.buffer.length < data.width) {
     const sliceWidth = data.width / data.buffer.length;
@@ -371,6 +372,9 @@ function renderAudioChunkWaveform(
   context: CanvasRenderingContext2D,
   data: AudioChunkWaveform
 ) {
+  if (data.isHidden) {
+    return;
+  }
   context.translate(data.position.x, data.position.y);
 
   context.fillStyle = "rgb(200, 200, 200)";

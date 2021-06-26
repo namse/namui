@@ -135,3 +135,7 @@ function onFrame(context: CanvasRenderingContext2D) {
 }
 
 requestAnimationFrame(() => onFrame(context));
+
+(window as any).dump = () => {
+  console.log(renderingDataList, updatingDataList);
+};

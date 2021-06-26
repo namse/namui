@@ -6,13 +6,14 @@ type AudioPlayingContext = {
   durationSecond: number;
   getPlaytimeSecond: () => number;
   stop: () => void;
+  play: () => void;
 };
 
 class AudioPlayer implements IAudioPlayer {
   private static nextPlayId: number = 1;
   private readonly playingContexts: { [playId: number]: AudioPlayingContext } =
     {};
-  playUrl(url: string): { playId: number } {
+  createPlayUrlContext(url: string): AudioPlayingContext {
     const audio = new Audio(url);
     const playingContext: AudioPlayingContext = {
       isPlaying: false,
@@ -22,6 +23,10 @@ class AudioPlayer implements IAudioPlayer {
       },
       stop: () => {
         audio.pause();
+      },
+      play: () => {
+        audio.currentTime = 0;
+        audio.play();
       },
     };
     audio.onended =
@@ -33,23 +38,38 @@ class AudioPlayer implements IAudioPlayer {
     audio.onplay = () => {
       playingContext.isPlaying = true;
     };
-    audio.play();
+    return playingContext;
+  }
+  registerAudioPlayingContext(playingContext: AudioPlayingContext): {
+    playId: number;
+  } {
     const playId = AudioPlayer.nextPlayId++;
     this.playingContexts[playId] = playingContext;
     return {
       playId,
     };
   }
+  playUrl(url: string): { playId: number } {
+    const context = this.createPlayUrlContext(url);
+    context.play();
+    return this.registerAudioPlayingContext(context);
+  }
   playWebAudioBuffer(
     audioContext: AudioContext,
     webAudioBuffer: AudioBuffer
   ): { playId: number } {
-    const source = audioContext.createBufferSource();
-    source.buffer = webAudioBuffer;
-    source.connect(audioContext.destination);
-    source.onended = () => {
-      playingContext.isPlaying = false;
-    };
+    const context = this.createPlayWebAudioBufferContext(
+      audioContext,
+      webAudioBuffer
+    );
+    context.play();
+    return this.registerAudioPlayingContext(context);
+  }
+  createPlayWebAudioBufferContext(
+    audioContext: AudioContext,
+    webAudioBuffer: AudioBuffer
+  ): AudioPlayingContext {
+    let source: AudioBufferSourceNode | undefined;
 
     let startTimeSecond: number = 0;
     const playingContext: AudioPlayingContext = {
@@ -59,20 +79,22 @@ class AudioPlayer implements IAudioPlayer {
         return audioContext.currentTime - startTimeSecond;
       },
       stop: () => {
-        source.stop();
+        source?.stop();
+      },
+      play: () => {
+        source = audioContext.createBufferSource();
+        source.buffer = webAudioBuffer;
+        source.connect(audioContext.destination);
+        source.onended = () => {
+          playingContext.isPlaying = false;
+        };
+        source.start();
+        startTimeSecond = audioContext.currentTime;
+        playingContext.isPlaying = true;
       },
     };
 
-    source.start();
-    startTimeSecond = audioContext.currentTime;
-    playingContext.isPlaying = true;
-
-    const playId = AudioPlayer.nextPlayId++;
-    this.playingContexts[playId] = playingContext;
-
-    return {
-      playId,
-    };
+    return playingContext;
   }
   playSamples(samples: Float32Array): { playId: number } {
     const audioContext = new AudioContext();
@@ -90,6 +112,11 @@ class AudioPlayer implements IAudioPlayer {
     return !audio?.isPlaying;
   }
   clearAudio(playId: number): void {
+    const playingContext = this.playingContexts[playId];
+    if (!playingContext) {
+      throw new Error(`cannot get playingContext for playId ${playId}`);
+    }
+    playingContext.stop();
     delete this.playingContexts[playId];
   }
   getPlaybackTimeRate(playId: number): number {
@@ -116,6 +143,20 @@ class AudioPlayer implements IAudioPlayer {
       webAudioBuffer.copyToChannel(channelData, index);
     });
     return this.playWebAudioBuffer(audioContext, webAudioBuffer);
+  }
+  stopAudio(playId: number): void {
+    const playingContext = this.playingContexts[playId];
+    if (!playingContext) {
+      throw new Error(`cannot get playingContext for playId ${playId}`);
+    }
+    playingContext.stop();
+  }
+  playAudio(playId: number): void {
+    const playingContext = this.playingContexts[playId];
+    if (!playingContext) {
+      throw new Error(`cannot get playingContext for playId ${playId}`);
+    }
+    playingContext.play();
   }
 }
 

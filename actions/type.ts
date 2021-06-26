@@ -11,7 +11,6 @@ export type MouseInfo = {
   isMouseDown: boolean;
   isClick: boolean;
 };
-
 export type UpdateContext = {
   dataList: UpdatingDataList;
   updatingDataMap: UpdatingDataMap;
@@ -22,4 +21,10 @@ export type UpdateContext = {
   state: StateData;
   native: Native;
   fps: number;
+};
+export type Box = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 };

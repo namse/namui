@@ -75,7 +75,19 @@ export type ControlAudioWaveformEditor = {
   id: number;
   audioWaveformEditorId: number;
   audioWaveformId: number;
-  audioBuffer?: Float32Array;
+  sourceAudioBuffer?: Float32Array;
+  draging?: {
+    bar: "start" | "end";
+    anchorX: number;
+  };
+};
+
+export type ControlAudioWaveformEditorV2 = {
+  isHidden: boolean;
+  isNeedReset: boolean;
+  audioWaveformEditorId: number;
+  sourceAudioBuffer?: Float32Array;
+  destAudioBuffer?: Float32Array;
   draging?: {
     bar: "start" | "end";
     anchorX: number;
@@ -105,11 +117,13 @@ export type ViewScene = {
   audioBufferDownloadingId?: number;
   isErrorOnAudioBufferDownloading?: boolean;
   recordButtonId: number;
-  recordingState: "idle" | "initializing" | "recording";
-  recordedWaveformEditorId: number;
+  recordingState: "idle" | "initializing" | "recording" | "editing";
   recordingAudioChunkWaveformId: number;
   audioPlayerId: number;
   playId?: number;
+  controlAudioWaveformEditorData: ControlAudioWaveformEditorV2;
+  recordSaveButtonId: number;
+  recordSavingId?: number;
 };
 
 export type SceneData = {
@@ -145,8 +159,13 @@ export const updatingDataList: UpdatingDataList = [
     recordButtonId: 13,
     audioPlayerId: 14,
     recordingState: "idle",
-    recordedWaveformEditorId: 15,
     recordingAudioChunkWaveformId: 16,
+    controlAudioWaveformEditorData: {
+      isHidden: true,
+      isNeedReset: false,
+      audioWaveformEditorId: 15,
+    },
+    recordSaveButtonId: 17,
     sceneDataList: [
       {
         id: 0,
