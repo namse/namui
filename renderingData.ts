@@ -107,6 +107,7 @@ export type Float32AudioWaveformPlayer = {
 export type AudioWaveformPlayer = {
   type: "audioWaveformPlayer";
   id: number;
+  isHidden: boolean;
   buffer?: CommonAudioBuffer;
   width: number;
   height: number;
@@ -337,6 +338,7 @@ export const renderingDataList: RenderingDataList = [
   },
   {
     type: "audioWaveformPlayer",
+    isHidden: true,
     id: 14,
     width: 800,
     height: 60,

@@ -354,6 +354,9 @@ function renderAudioWaveformPlayer(
   context: CanvasRenderingContext2D,
   data: AudioWaveformPlayer
 ) {
+  if (data.isHidden) {
+    return;
+  }
   renderFloat32AudioWaveformBox(context, {
     ...data,
     buffer: data.buffer?.channelDataList[0],

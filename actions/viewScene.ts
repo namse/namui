@@ -112,6 +112,7 @@ function handleAudioPlayer(context: UpdateContext, data: ViewScene) {
     "audioWaveformPlayer"
   );
   audioPlayer.buffer = data.audioBuffer;
+  audioPlayer.isHidden = !audioPlayer.buffer;
   if (data.playId) {
     audioPlayer.playBarXRatio = context.native.audioPlayer.getPlaybackTimeRate(
       data.playId
