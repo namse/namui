@@ -15,7 +15,10 @@ function handlePlayAudioButton(context: UpdateContext, data: ViewScene) {
   );
   if (isClickButton(context, playAudioButton)) {
     if (data.audioBuffer) {
-      context.native.audioPlayer.playAudioBuffer(data.audioBuffer);
+      const { playId } = context.native.audioPlayer.playAudioBuffer(
+        data.audioBuffer
+      );
+      data.playId = playId;
     }
   }
 }
@@ -43,7 +46,8 @@ export function updateViewScene(context: UpdateContext, data: ViewScene) {
   handleText(context, data);
   handlePlayAudioButton(context, data);
   handleNextPrevButton(context, data);
-  updateAudio(context, data);
+  handleLoadingAudio(context, data);
+  handleAudioPlayer(context, data);
 }
 
 function onChangeScene(context: UpdateContext, data: ViewScene) {
@@ -58,7 +62,7 @@ function startDownloadSceneAudio(context: UpdateContext, data: ViewScene) {
   );
   data.audioBufferDownloadingId = downloadingId;
 }
-function updateAudio(context: UpdateContext, data: ViewScene) {
+function handleLoadingAudio(context: UpdateContext, data: ViewScene) {
   if (data.isErrorOnAudioBufferDownloading) {
     return;
   }
@@ -88,5 +92,18 @@ function updateAudio(context: UpdateContext, data: ViewScene) {
       data.audioBufferDownloadingId
     );
     data.isErrorOnAudioBufferDownloading = false;
+  }
+}
+function handleAudioPlayer(context: UpdateContext, data: ViewScene) {
+  const audioPlayer = getRenderingTarget(
+    context,
+    data.audioPlayerId,
+    "audioWaveformPlayer"
+  );
+  audioPlayer.buffer = data.audioBuffer;
+  if (data.playId) {
+    audioPlayer.playBarXRatio = context.native.audioPlayer.getPlaybackTimeRate(
+      data.playId
+    );
   }
 }

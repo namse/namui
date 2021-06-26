@@ -1,5 +1,6 @@
 import {
   AudioWaveformEditor,
+  AudioWaveformPlayer,
   Button,
   Circle,
   Float32AudioWaveform,
@@ -55,6 +56,11 @@ export function render(
       case "textBox":
         {
           renderTextBox(context, data);
+        }
+        break;
+      case "audioWaveformPlayer":
+        {
+          renderAudioWaveformPlayer(context, data);
         }
         break;
       default:
@@ -154,7 +160,7 @@ function renderUint8AudioWaveform(
 
 function renderFloat32AudioWaveform(
   context: CanvasRenderingContext2D,
-  data: Omit<Float32AudioWaveform, "type">
+  data: Omit<Float32AudioWaveform, "id" | "type">
 ) {
   context.translate(data.position.x, data.position.y);
 
@@ -324,4 +330,22 @@ function renderTextBox(context: CanvasRenderingContext2D, data: TextBox) {
   }
 
   context.restore();
+}
+function renderAudioWaveformPlayer(
+  context: CanvasRenderingContext2D,
+  data: AudioWaveformPlayer
+) {
+  renderFloat32AudioWaveform(context, {
+    ...data,
+    buffer: data.buffer?.channelDataList[0],
+  });
+
+  context.translate(data.position.x, data.position.y);
+
+  const barX = data.width * data.playBarXRatio - data.playBarWidth / 2;
+
+  context.fillStyle = "black";
+  context.fillRect(barX, 0, data.playBarWidth, data.height);
+
+  context.translate(-data.position.x, -data.position.y);
 }

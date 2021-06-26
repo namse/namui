@@ -105,6 +105,8 @@ export type ViewScene = {
   audioBufferDownloadingId?: number;
   isErrorOnAudioBufferDownloading?: boolean;
   recordButtonId: number;
+  audioPlayerId: number;
+  playId: number;
 };
 
 export type SceneData = {
@@ -177,6 +179,8 @@ export const updatingDataList: UpdatingDataList = [
     previousButtonId: 10,
     nextButtonId: 11,
     playAudioButtonId: 12,
+    recordButtonId: 13,
+    audioPlayerId: 14,
     sceneDataList: [
       {
         id: 0,
