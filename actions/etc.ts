@@ -1,119 +1,38 @@
+import { RenderingData, Button, AudioWaveformEditor } from "../renderingData";
 import {
-  AudioWaveformEditor,
-  Button,
-  RenderingData,
-  RenderingDataMap,
-} from "./renderingData";
-import {
-  AddAfterClick,
-  MapRecordingStateToButtonText,
-  Move,
   Rotation,
-  RecordOnClick,
-  UpdatingDataList,
-  UpdatingDataMap,
-  AudioWaveform,
+  AddAfterClick,
+  Move,
   UpdatingData,
+  RecordOnClick,
+  MapRecordingStateToButtonText,
+  AudioWaveform,
   FpsText,
   ControlAudioWaveformEditor,
   SaveAudioOnClickButton,
-  ViewScene,
-} from "./updatingData";
-import { StateData } from "./stateData";
-import { Native } from "./native";
-
-export type MouseInfo = {
-  position: {
-    x: number;
-    y: number;
-  };
-  isMouseDown: boolean;
-  isClick: boolean;
-};
-
-export type UpdateContext = {
-  dataList: UpdatingDataList;
-  updatingDataMap: UpdatingDataMap;
-  renderingDataMap: RenderingDataMap;
-  mouseInfo?: MouseInfo;
-  newDataList: UpdatingDataList;
-  removingDataList: UpdatingDataList;
-  state: StateData;
-  native: Native;
-  fps: number;
-};
-
-export function update(context: UpdateContext) {
-  context.dataList.forEach((data) => {
-    switch (data.type) {
-      case "rotation": {
-        updateRotation(context, data);
-        return;
-      }
-      case "addAfterClick": {
-        updateAddAfterClick(context, data);
-        return;
-      }
-      case "move": {
-        updateMove(context, data);
-        return;
-      }
-      case "recordOnClick": {
-        updateRecordOnclick(context, data);
-        return;
-      }
-      case "mapRecordingStateToButtonText": {
-        updateMapRecordingStateToButtonText(context, data);
-        return;
-      }
-      case "audioWaveform": {
-        updateAudioWaveform(context, data);
-        return;
-      }
-      case "fpsText": {
-        updateFpsText(context, data);
-        return;
-      }
-      case "controlAudioWaveformEditor": {
-        updateControlAudioWaveformEditor(context, data);
-        return;
-      }
-      case "saveAudioOnClickButton": {
-        updateSaveAudioOnClickButton(context, data);
-        return;
-      }
-      case "viewScene": {
-        updateViewScene(context, data);
-        return;
-      }
-      default: {
-        console.error(`unknwon data`, data);
-        return;
-      }
-    }
-  });
-}
+} from "../updatingData";
+import { UpdateContext } from "./type";
 
 type Vector = {
   x: number;
   y: number;
 };
 
-function multiplyScalarToVector(vector: Vector, value: number): Vector {
+export function multiplyScalarToVector(vector: Vector, value: number): Vector {
   return {
     x: vector.x * value,
     y: vector.y * value,
   };
 }
 
-function translate(vector: Vector, deltaVector: Vector): Vector {
+export function translate(vector: Vector, deltaVector: Vector): Vector {
   return {
     x: vector.x - deltaVector.x,
     y: vector.y - deltaVector.y,
   };
 }
 
-function rotate(vector: Vector, angle: number): Vector {
+export function rotate(vector: Vector, angle: number): Vector {
   const rotatedX = Math.cos(angle) * vector.x - Math.sin(angle) * vector.y;
   const rotatedY = Math.sin(angle) * vector.x + Math.cos(angle) * vector.y;
 
@@ -123,7 +42,7 @@ function rotate(vector: Vector, angle: number): Vector {
   };
 }
 
-function updateRotation(context: UpdateContext, data: Rotation) {
+export function updateRotation(context: UpdateContext, data: Rotation) {
   const { targetId } = data;
   const target = context.renderingDataMap[targetId];
   if (!target) {
@@ -157,7 +76,7 @@ type Box = {
   height: number;
 };
 
-function checkPointInBox(point: Vector, box: Box): boolean {
+export function checkPointInBox(point: Vector, box: Box): boolean {
   return (
     box.x <= point.x &&
     point.x <= box.x + box.width &&
@@ -166,7 +85,7 @@ function checkPointInBox(point: Vector, box: Box): boolean {
   );
 }
 
-function checkPositionInRenderingData(
+export function checkPositionInRenderingData(
   renderingData: RenderingData,
   position: Vector
 ): boolean {
@@ -185,7 +104,7 @@ function checkPositionInRenderingData(
   }
 }
 
-function updateAddAfterClick(
+export function updateAddAfterClick(
   context: UpdateContext,
   data: AddAfterClick<Rotation>
 ) {
@@ -213,7 +132,7 @@ function updateAddAfterClick(
   }
 }
 
-function move(target: RenderingData, data: Move) {
+export function move(target: RenderingData, data: Move) {
   switch (target.type) {
     case "text":
       {
@@ -224,7 +143,7 @@ function move(target: RenderingData, data: Move) {
   }
 }
 
-function updateMove(context: UpdateContext, data: Move) {
+export function updateMove(context: UpdateContext, data: Move) {
   const target = context.renderingDataMap[data.targetId];
   if (!target) {
     throw new Error("cannot find target");
@@ -233,7 +152,7 @@ function updateMove(context: UpdateContext, data: Move) {
   move(target, data);
 }
 
-function getRenderingTarget<
+export function getRenderingTarget<
   TType extends RenderingData["type"],
   TData = Extract<RenderingData, { type: TType }>
 >(context: UpdateContext, id: number, type: TType): TData {
@@ -247,7 +166,7 @@ function getRenderingTarget<
   return target as unknown as TData;
 }
 
-function getUpdatingTarget<
+export function getUpdatingTarget<
   TType extends UpdatingData["type"],
   TData = Extract<UpdatingData, { type: TType }>
 >(context: UpdateContext, id: number, type: TType): TData {
@@ -261,14 +180,17 @@ function getUpdatingTarget<
   return target as unknown as TData;
 }
 
-function isClickButton(context: UpdateContext, button: Button): boolean {
+export function isClickButton(context: UpdateContext, button: Button): boolean {
   return (
     !!context.mouseInfo?.isClick &&
     checkPositionInRenderingData(button, context.mouseInfo.position)
   );
 }
 
-function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
+export function updateRecordOnclick(
+  context: UpdateContext,
+  data: RecordOnClick
+) {
   const recordButton = getRenderingTarget(
     context,
     data.recordButtonId,
@@ -337,7 +259,7 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
   }
 }
 
-function updateMapRecordingStateToButtonText(
+export function updateMapRecordingStateToButtonText(
   context: UpdateContext,
   data: MapRecordingStateToButtonText
 ) {
@@ -377,7 +299,10 @@ function updateMapRecordingStateToButtonText(
     }
   }
 }
-function updateAudioWaveform(context: UpdateContext, data: AudioWaveform) {
+export function updateAudioWaveform(
+  context: UpdateContext,
+  data: AudioWaveform
+) {
   const float32AudioWaveformPlayer = getRenderingTarget(
     context,
     data.float32AudioWaveformPlayerId,
@@ -411,11 +336,11 @@ function updateAudioWaveform(context: UpdateContext, data: AudioWaveform) {
 
   data.playId = playId;
 }
-function updateFpsText(context: UpdateContext, data: FpsText) {
+export function updateFpsText(context: UpdateContext, data: FpsText) {
   const text = getRenderingTarget(context, data.textId, "text");
   text.content = context.fps.toString(10);
 }
-function updateControlAudioWaveformEditor(
+export function updateControlAudioWaveformEditor(
   context: UpdateContext,
   data: ControlAudioWaveformEditor
 ) {
@@ -454,7 +379,7 @@ function updateControlAudioWaveformEditor(
   }
 }
 
-function dragAudioWaveformEditorBar(
+export function dragAudioWaveformEditorBar(
   context: UpdateContext,
   data: ControlAudioWaveformEditor,
   audioWaveformEditor: AudioWaveformEditor
@@ -514,7 +439,7 @@ function dragAudioWaveformEditorBar(
   }
 }
 
-function getBarMouseOn(
+export function getBarMouseOn(
   context: UpdateContext,
   audioWaveformEditor: AudioWaveformEditor
 ): "start" | "end" | "nothing" {
@@ -537,7 +462,7 @@ function getBarMouseOn(
   return "nothing";
 }
 
-function getHighlightOn(
+export function getHighlightOn(
   context: UpdateContext,
   data: ControlAudioWaveformEditor,
   audioWaveformEditor: AudioWaveformEditor
@@ -548,7 +473,7 @@ function getHighlightOn(
   return getBarMouseOn(context, audioWaveformEditor);
 }
 
-function getAudioWaveformEdtiorBarBox(
+export function getAudioWaveformEdtiorBarBox(
   audioWaveformEditor: AudioWaveformEditor,
   bar: "start" | "end"
 ): Box {
@@ -566,7 +491,7 @@ function getAudioWaveformEdtiorBarBox(
     height: audioWaveformEditor.height,
   };
 }
-function updateSaveAudioOnClickButton(
+export function updateSaveAudioOnClickButton(
   context: UpdateContext,
   data: SaveAudioOnClickButton
 ) {
@@ -605,82 +530,4 @@ function updateSaveAudioOnClickButton(
     data.isSaving = true;
     data.savingId = savingId;
   }
-}
-function onChangeScene(context: UpdateContext, data: ViewScene) {
-  startDownloadSceneAudio(context, data);
-}
-function startDownloadSceneAudio(context: UpdateContext, data: ViewScene) {
-  data.audioBuffer = undefined;
-  data.isErrorOnAudioBufferDownloading = undefined;
-  const sceneData = data.sceneDataList[data.sceneIndex];
-  const { downloadingId } = context.native.audioDownloader.startDownloadAudio(
-    `${sceneData.id}.wav`
-  );
-  data.audioBufferDownloadingId = downloadingId;
-}
-function updateAudio(context: UpdateContext, data: ViewScene) {
-  if (data.isErrorOnAudioBufferDownloading) {
-    return;
-  }
-
-  if (!data.audioBufferDownloadingId) {
-    startDownloadSceneAudio(context, data);
-    return;
-  }
-
-  if (
-    context.native.audioDownloader.isDownloadError(
-      data.audioBufferDownloadingId
-    )
-  ) {
-    console.error("error to download audio");
-    data.isErrorOnAudioBufferDownloading = true;
-    return;
-  }
-
-  if (
-    context.native.audioDownloader.isDownloadDone(
-      data.audioBufferDownloadingId
-    ) &&
-    !data.audioBuffer
-  ) {
-    data.audioBuffer = context.native.audioDownloader.getDownloadedAudio(
-      data.audioBufferDownloadingId
-    );
-    data.isErrorOnAudioBufferDownloading = false;
-  }
-}
-function updateViewScene(context: UpdateContext, data: ViewScene) {
-  const textBox = getRenderingTarget(context, data.textBoxId, "textBox");
-  const text = data.sceneDataList[data.sceneIndex].text;
-  textBox.content = text;
-
-  const playAudioButton = getRenderingTarget(
-    context,
-    data.playAudioButtonId,
-    "button"
-  );
-  if (isClickButton(context, playAudioButton)) {
-    if (data.audioBuffer) {
-      context.native.audioPlayer.playAudioBuffer(data.audioBuffer);
-    }
-  }
-  const nextButton = getRenderingTarget(context, data.nextButtonId, "button");
-  const previousButton = getRenderingTarget(
-    context,
-    data.previousButtonId,
-    "button"
-  );
-  if (isClickButton(context, nextButton)) {
-    data.sceneIndex = Math.min(
-      data.sceneIndex + 1,
-      data.sceneDataList.length - 1
-    );
-    onChangeScene(context, data);
-  } else if (isClickButton(context, previousButton)) {
-    data.sceneIndex = Math.max(data.sceneIndex - 1, 0);
-    onChangeScene(context, data);
-  }
-
-  updateAudio(context, data);
 }

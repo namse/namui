@@ -103,7 +103,8 @@ export type ViewScene = {
   previousButtonId: number;
   audioBuffer?: CommonAudioBuffer;
   audioBufferDownloadingId?: number;
-  isErrorAduioBufferDownloading?: boolean;
+  isErrorOnAudioBufferDownloading?: boolean;
+  recordButtonId: number;
 };
 
 export type SceneData = {

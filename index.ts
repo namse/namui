@@ -4,7 +4,6 @@ import {
   RenderingDataMap,
 } from "./renderingData";
 import { render } from "./render";
-import { MouseInfo, update, UpdateContext } from "./update";
 import { updatingDataList } from "./updatingData";
 import { stateData } from "./stateData";
 import { Native } from "./native";
@@ -12,6 +11,8 @@ import { record } from "./native-web/record/Record";
 import { audioPlayer } from "./native-web/AudioPlayer";
 import { audioNetwork } from "./native-web/audioNetwork/AudioNetwork";
 import { audioDownloader } from "./native-web/AudioDownloader";
+import { MouseInfo, UpdateContext } from "./actions/type";
+import { actAll } from "./actions";
 
 function setupCanvasDpi(canvas: HTMLCanvasElement) {
   // Get the device pixel ratio, falling back to 1.
@@ -117,7 +118,7 @@ function onFrame(context: CanvasRenderingContext2D) {
     fps,
   };
 
-  update(updateContext);
+  actAll(updateContext);
   render(context, renderingDataList);
 
   updateContext.removingDataList.forEach((removingData) => {
