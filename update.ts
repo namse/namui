@@ -628,7 +628,9 @@ function updateViewScene(context: UpdateContext, data: ViewScene) {
     "button"
   );
   if (isClickButton(context, playAudioButton)) {
-    context.native.audioPlayer.playUrl(`https://}`);
+    if (data.audioBuffer) {
+      context.native.audioPlayer.playAudioBuffer(data.audioBuffer);
+    }
   }
   const nextButton = getRenderingTarget(context, data.nextButtonId, "button");
   const previousButton = getRenderingTarget(

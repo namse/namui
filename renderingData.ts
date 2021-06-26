@@ -118,7 +118,13 @@ export type TextBox = {
   type: "textBox";
   id: number;
   align: "left" | "center" | "right";
-  textBaseline: "bottom" | "middle" | "top";
+  textBaseline:
+    | "alphabetic"
+    | "bottom"
+    | "hanging"
+    | "ideographic"
+    | "middle"
+    | "top";
   position: {
     x: number;
     y: number;
@@ -296,15 +302,15 @@ export const renderingDataList: RenderingDataList = [
     type: "textBox",
     id: 9,
     align: "left",
-    textBaseline: "top",
+    textBaseline: "hanging",
     content: "",
-    fontSize: 14,
+    fontSize: 20,
     position: {
-      x: 460,
-      y: 500,
+      x: 500,
+      y: 100,
     },
-    width: 1000,
-    height: 400,
+    width: 920,
+    height: 200,
     textColor: {
       r: 0,
       g: 0,
@@ -312,10 +318,10 @@ export const renderingDataList: RenderingDataList = [
       a: 1,
     },
     borderColor: {
-      r: 0,
-      g: 0,
-      b: 0,
-      a: 0,
+      r: 1,
+      g: 1,
+      b: 1,
+      a: 0.2,
     },
   },
   {
@@ -331,7 +337,7 @@ export const renderingDataList: RenderingDataList = [
       align: "center",
       textBaseline: "middle",
       content: "< prev",
-      fontSize: 10,
+      fontSize: 20,
       position: {
         x: 45,
         y: 30,
@@ -358,7 +364,34 @@ export const renderingDataList: RenderingDataList = [
       align: "center",
       textBaseline: "middle",
       content: "next >",
-      fontSize: 10,
+      fontSize: 20,
+      position: {
+        x: 45,
+        y: 30,
+      },
+      color: {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 1,
+      },
+      rotationAngle: 0,
+    },
+  },
+  {
+    type: "button",
+    id: 12,
+    width: 90,
+    height: 60,
+    position: {
+      x: 1920 - 500 - 90,
+      y: 700,
+    },
+    text: {
+      align: "center",
+      textBaseline: "middle",
+      content: "play audio",
+      fontSize: 16,
       position: {
         x: 45,
         y: 30,

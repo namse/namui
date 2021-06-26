@@ -174,7 +174,7 @@ export const updatingDataList: UpdatingDataList = [
     sceneIndex: 0,
     previousButtonId: 10,
     nextButtonId: 11,
-    playAudioButtonId: 4,
+    playAudioButtonId: 12,
     sceneDataList: [
       {
         id: 0,

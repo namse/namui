@@ -1,3 +1,4 @@
+import { CommonAudioBuffer } from "../common/AudioBuffer";
 import { IAudioPlayer } from "../native/AudioPlayer";
 
 type AudioPlayingContext = {
@@ -39,29 +40,31 @@ class AudioPlayer implements IAudioPlayer {
       playId,
     };
   }
-  playSamples(samples: Float32Array): { playId: number } {
-    const context = new AudioContext();
-    const source = context.createBufferSource();
-    const buffer = context.createBuffer(1, samples.length, context.sampleRate);
-    buffer.copyToChannel(samples, 0);
-    source.buffer = buffer;
-    source.connect(context.destination);
+  playWebAudioBuffer(
+    audioContext: AudioContext,
+    webAudioBuffer: AudioBuffer
+  ): { playId: number } {
+    const source = audioContext.createBufferSource();
+    source.buffer = webAudioBuffer;
+    source.connect(audioContext.destination);
+    source.onended = () => {
+      playingContext.isPlaying = false;
+    };
+
     let startTimeSecond: number = 0;
     const playingContext: AudioPlayingContext = {
       isPlaying: false,
-      durationSecond: buffer.duration,
+      durationSecond: webAudioBuffer.duration,
       getPlaytimeSecond: () => {
-        return context.currentTime - startTimeSecond;
+        return audioContext.currentTime - startTimeSecond;
       },
       stop: () => {
         source.stop();
       },
     };
-    source.onended = () => {
-      playingContext.isPlaying = false;
-    };
+
     source.start();
-    startTimeSecond = context.currentTime;
+    startTimeSecond = audioContext.currentTime;
     playingContext.isPlaying = true;
 
     const playId = AudioPlayer.nextPlayId++;
@@ -70,6 +73,17 @@ class AudioPlayer implements IAudioPlayer {
     return {
       playId,
     };
+  }
+  playSamples(samples: Float32Array): { playId: number } {
+    const audioContext = new AudioContext();
+
+    const buffer = audioContext.createBuffer(
+      1,
+      samples.length,
+      audioContext.sampleRate
+    );
+    buffer.copyToChannel(samples, 0);
+    return this.playWebAudioBuffer(audioContext, buffer);
   }
   isPlayFinished(playId: number): boolean {
     const audio = this.playingContexts[playId];
@@ -90,6 +104,18 @@ class AudioPlayer implements IAudioPlayer {
         playingContext.getPlaytimeSecond() / playingContext.durationSecond
       )
     );
+  }
+  playAudioBuffer(audioBuffer: CommonAudioBuffer): { playId: number } {
+    const audioContext = new AudioContext();
+    const webAudioBuffer = new AudioBuffer({
+      length: audioBuffer.length,
+      sampleRate: audioBuffer.sampleRate,
+      numberOfChannels: audioBuffer.numberOfChannels,
+    });
+    audioBuffer.channelDataList.forEach((channelData, index) => {
+      webAudioBuffer.copyToChannel(channelData, index);
+    });
+    return this.playWebAudioBuffer(audioContext, webAudioBuffer);
   }
 }
 
