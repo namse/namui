@@ -8,41 +8,49 @@ import { s3Client } from "./util/s3Client";
 
 type DownloadingContext = {
   audioBuffer?: CommonAudioBuffer;
+  isDownloadingError: boolean;
 };
 
 class AudioDownloader implements IAudioDownloader {
-  private nextDownloadingId: number = 0;
+  private nextDownloadingId: number = 1;
   private readonly downloadingContexts: { [id: number]: DownloadingContext } =
     {};
 
   async getAndSaveAudio(context: DownloadingContext, filename: string) {
-    const output = await s3Client.send(
-      new GetObjectCommand({
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: filename,
-      })
-    );
-    if (!output.Body) {
-      throw new Error("no body");
-    }
-    let arrayBuffer: ArrayBuffer;
-    if (output.Body instanceof Blob) {
-      arrayBuffer = await readAsArrayBuffer(output.Body as Blob);
-    } else if (output.Body instanceof ReadableStream) {
-      arrayBuffer = await readAll(output.Body);
-    } else {
-      throw new Error("unknown type");
-    }
+    try {
+      const output = await s3Client.send(
+        new GetObjectCommand({
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: filename,
+        })
+      );
+      if (!output.Body) {
+        throw new Error("no body");
+      }
+      let arrayBuffer: ArrayBuffer;
+      if (output.Body instanceof Blob) {
+        arrayBuffer = await readAsArrayBuffer(output.Body as Blob);
+      } else if (output.Body instanceof ReadableStream) {
+        arrayBuffer = await readAll(output.Body);
+      } else {
+        throw new Error("unknown type");
+      }
 
-    const audioContext = new AudioContext();
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    const commonAudioBuffer = toCommonAudioBuffer(audioBuffer);
+      const audioContext = new AudioContext();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      const commonAudioBuffer = toCommonAudioBuffer(audioBuffer);
 
-    context.audioBuffer = commonAudioBuffer;
+      context.audioBuffer = commonAudioBuffer;
+    } catch (error) {
+      context.isDownloadingError = true;
+      console.error(error);
+    }
   }
   startDownloadAudio(filename: string): { downloadingId: number } {
     const downloadingId = this.nextDownloadingId++;
-    const context: DownloadingContext = {};
+    const context: DownloadingContext = {
+      isDownloadingError: false,
+    };
     this.downloadingContexts[downloadingId] = context;
 
     this.getAndSaveAudio(context, filename);
@@ -62,8 +70,11 @@ class AudioDownloader implements IAudioDownloader {
     return audioBuffer;
   }
   isDownloadError(downloadingId: number): boolean {
-    console.error("Method not implemented.");
-    return false;
+    const context = this.downloadingContexts[downloadingId];
+    if (!context) {
+      return true;
+    }
+    return context.isDownloadingError;
   }
 }
 

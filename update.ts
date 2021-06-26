@@ -611,11 +611,44 @@ function onChangeScene(context: UpdateContext, data: ViewScene) {
 }
 function startDownloadSceneAudio(context: UpdateContext, data: ViewScene) {
   data.audioBuffer = undefined;
+  data.isErrorOnAudioBufferDownloading = undefined;
   const sceneData = data.sceneDataList[data.sceneIndex];
   const { downloadingId } = context.native.audioDownloader.startDownloadAudio(
     `${sceneData.id}.wav`
   );
   data.audioBufferDownloadingId = downloadingId;
+}
+function updateAudio(context: UpdateContext, data: ViewScene) {
+  if (data.isErrorOnAudioBufferDownloading) {
+    return;
+  }
+
+  if (!data.audioBufferDownloadingId) {
+    startDownloadSceneAudio(context, data);
+    return;
+  }
+
+  if (
+    context.native.audioDownloader.isDownloadError(
+      data.audioBufferDownloadingId
+    )
+  ) {
+    console.error("error to download audio");
+    data.isErrorOnAudioBufferDownloading = true;
+    return;
+  }
+
+  if (
+    context.native.audioDownloader.isDownloadDone(
+      data.audioBufferDownloadingId
+    ) &&
+    !data.audioBuffer
+  ) {
+    data.audioBuffer = context.native.audioDownloader.getDownloadedAudio(
+      data.audioBufferDownloadingId
+    );
+    data.isErrorOnAudioBufferDownloading = false;
+  }
 }
 function updateViewScene(context: UpdateContext, data: ViewScene) {
   const textBox = getRenderingTarget(context, data.textBoxId, "textBox");
@@ -649,23 +682,5 @@ function updateViewScene(context: UpdateContext, data: ViewScene) {
     onChangeScene(context, data);
   }
 
-  if (data.audioBufferDownloadingId) {
-    if (
-      context.native.audioDownloader.isDownloadDone(
-        data.audioBufferDownloadingId
-      )
-    ) {
-      data.audioBuffer = context.native.audioDownloader.getDownloadedAudio(
-        data.audioBufferDownloadingId
-      );
-      data.audioBufferDownloadingId = undefined;
-    } else if (
-      context.native.audioDownloader.isDownloadError(
-        data.audioBufferDownloadingId
-      )
-    ) {
-      console.error("error to download audio");
-      startDownloadSceneAudio(context, data);
-    }
-  }
+  updateAudio(context, data);
 }
