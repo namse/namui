@@ -105,8 +105,11 @@ export type ViewScene = {
   audioBufferDownloadingId?: number;
   isErrorOnAudioBufferDownloading?: boolean;
   recordButtonId: number;
+  recordingState: "idle" | "initializing" | "recording";
+  recordedWaveformEditorId: number;
+  recordingAudioChunkWaveformId: number;
   audioPlayerId: number;
-  playId: number;
+  playId?: number;
 };
 
 export type SceneData = {
@@ -131,46 +134,6 @@ export type UpdatingDataList = Array<UpdatingData>;
 export type UpdatingDataMap = { [id: number]: UpdatingData };
 
 export const updatingDataList: UpdatingDataList = [
-  // {
-  //   type: "recordOnClick",
-  //   id: 0,
-  //   recordButtonId: 0,
-  //   state: "idle",
-  //   realtimeAudioWaveformId: 2,
-  //   realtimeAudioBuffer: new Uint8Array(1024),
-  //   controlAudioWaveformEditorId: 4,
-  // },
-  // {
-  //   type: "mapRecordingStateToButtonText",
-  //   id: 1,
-  //   buttonId: 0,
-  //   updatingId: 0,
-  // },
-  // {
-  //   type: "audioWaveform",
-  //   id: 2,
-  //   float32AudioWaveformPlayerId: 3,
-  //   playButtonId: 4,
-  // },
-  // {
-  //   type: "fpsText",
-  //   id: 3,
-  //   textId: 6,
-  // },
-  // {
-  //   type: "controlAudioWaveformEditor",
-  //   id: 4,
-  //   audioWaveformEditorId: 7,
-  //   audioWaveformId: 2,
-  // },
-  // {
-  //   type: "saveAudioOnClickButton",
-  //   id: 5,
-  //   buttonId: 8,
-  //   audioWaveformId: 2,
-  //   isSaving: false,
-  //   filename: "test.wav",
-  // },
   {
     type: "viewScene",
     id: 6,
@@ -181,6 +144,9 @@ export const updatingDataList: UpdatingDataList = [
     playAudioButtonId: 12,
     recordButtonId: 13,
     audioPlayerId: 14,
+    recordingState: "idle",
+    recordedWaveformEditorId: 15,
+    recordingAudioChunkWaveformId: 16,
     sceneDataList: [
       {
         id: 0,

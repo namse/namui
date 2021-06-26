@@ -100,6 +100,13 @@ class Record implements IRecord {
   getResult(id: number): { samples: Float32Array } | undefined {
     return this.recordingStates[id]?.recordResult;
   }
+  fillAudioWaveformBufferFloat32(buffer: Float32Array): void {
+    if (!Record.sharedAudio) {
+      throw new Error("sharedAudio not initialized");
+    }
+    const { analyser } = Record.sharedAudio;
+    analyser.getFloatTimeDomainData(buffer);
+  }
 }
 
 export const record = new Record();

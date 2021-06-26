@@ -1,4 +1,7 @@
-import { CommonAudioBuffer } from "./common/AudioBuffer";
+import {
+  CommonAudioBuffer,
+  CommonAudioChunkBuffer,
+} from "./common/AudioBuffer";
 
 export type Circle = {
   type: "circle";
@@ -117,6 +120,7 @@ export type AudioWaveformPlayer = {
 export type AudioWaveformEditor = {
   type: "audioWaveformEditor";
   id: number;
+  isHidden: boolean;
   buffer?: Float32Array;
   width: number;
   height: number;
@@ -128,6 +132,19 @@ export type AudioWaveformEditor = {
   startBarPercent: number;
   endBarPercent: number;
   highlightOn: "nothing" | "start" | "end";
+};
+
+export type AudioChunkWaveform = {
+  type: "audioChunkWaveform";
+  id: number;
+  isHidden: boolean;
+  buffer?: CommonAudioChunkBuffer;
+  width: number;
+  height: number;
+  position: {
+    x: number;
+    y: number;
+  };
 };
 
 export type TextBox = {
@@ -172,149 +189,13 @@ export type RenderingData =
   | AudioWaveformEditor
   | Float32AudioWaveformPlayer
   | TextBox
-  | AudioWaveformPlayer;
+  | AudioWaveformPlayer
+  | AudioChunkWaveform;
 
 export type RenderingDataList = Array<RenderingData>;
 export type RenderingDataMap = { [id: number]: RenderingData };
 
 export const renderingDataList: RenderingDataList = [
-  // {
-  //   type: "button",
-  //   id: 0,
-  //   width: 40,
-  //   height: 20,
-  //   position: {
-  //     x: 300,
-  //     y: 100,
-  //   },
-  //   text: {
-  //     align: "center",
-  //     textBaseline: "middle",
-  //     content: "Start!",
-  //     fontSize: 10,
-  //     position: {
-  //       x: 20,
-  //       y: 10,
-  //     },
-  //     color: {
-  //       r: 0,
-  //       g: 0,
-  //       b: 0,
-  //       a: 1,
-  //     },
-  //     rotationAngle: 0,
-  //   },
-  // },
-  // {
-  //   type: "uint8AudioWaveform",
-  //   id: 2,
-  //   buffer: new Uint8Array(1024),
-  //   width: 300,
-  //   height: 100,
-  //   position: {
-  //     x: 0,
-  //     y: 0,
-  //   },
-  // },
-  // {
-  //   type: "float32AudioWaveformPlayer",
-  //   id: 3,
-  //   width: 300,
-  //   height: 100,
-  //   position: {
-  //     x: 0,
-  //     y: 100,
-  //   },
-  //   playBarWidth: 5,
-  //   playBarXRatio: 0,
-  // },
-  // {
-  //   type: "button",
-  //   id: 4,
-  //   width: 40,
-  //   height: 20,
-  //   position: {
-  //     x: 300,
-  //     y: 140,
-  //   },
-  //   text: {
-  //     align: "center",
-  //     textBaseline: "middle",
-  //     content: "play",
-  //     fontSize: 10,
-  //     position: {
-  //       x: 20,
-  //       y: 10,
-  //     },
-  //     color: {
-  //       r: 0,
-  //       g: 0,
-  //       b: 0,
-  //       a: 1,
-  //     },
-  //     rotationAngle: 0,
-  //   },
-  // },
-  // {
-  //   type: "text",
-  //   id: 6,
-  //   align: "left",
-  //   textBaseline: "top",
-  //   content: "",
-  //   fontSize: 10,
-  //   position: {
-  //     x: 0,
-  //     y: 0,
-  //   },
-  //   color: {
-  //     r: 255,
-  //     g: 0,
-  //     b: 0,
-  //     a: 1,
-  //   },
-  //   rotationAngle: 0,
-  // },
-  // {
-  //   type: "audioWaveformEditor",
-  //   id: 7,
-  //   width: 300,
-  //   height: 100,
-  //   position: {
-  //     x: 0,
-  //     y: 200,
-  //   },
-  //   barWidth: 10,
-  //   startBarPercent: 0,
-  //   endBarPercent: 100,
-  //   highlightOn: "nothing",
-  // },
-  // {
-  //   type: "button",
-  //   id: 8,
-  //   width: 40,
-  //   height: 20,
-  //   position: {
-  //     x: 300,
-  //     y: 180,
-  //   },
-  //   text: {
-  //     align: "center",
-  //     textBaseline: "middle",
-  //     content: "save",
-  //     fontSize: 10,
-  //     position: {
-  //       x: 20,
-  //       y: 10,
-  //     },
-  //     color: {
-  //       r: 0,
-  //       g: 0,
-  //       b: 0,
-  //       a: 1,
-  //     },
-  //     rotationAngle: 0,
-  //   },
-  // },
   {
     type: "textBox",
     id: 9,
@@ -460,5 +341,31 @@ export const renderingDataList: RenderingDataList = [
     },
     playBarWidth: 5,
     playBarXRatio: 0,
+  },
+  {
+    type: "audioWaveformEditor",
+    id: 15,
+    isHidden: true,
+    width: 800,
+    height: 60,
+    position: {
+      x: 500,
+      y: 500,
+    },
+    barWidth: 5,
+    endBarPercent: 100,
+    startBarPercent: 0,
+    highlightOn: "nothing",
+  },
+  {
+    type: "audioChunkWaveform",
+    id: 16,
+    isHidden: true,
+    width: 800,
+    height: 60,
+    position: {
+      x: 500,
+      y: 500,
+    },
   },
 ];

@@ -5,6 +5,7 @@ export interface IRecord {
       }
     | undefined;
   fillAudioWaveformBuffer(id: number, buffer: Uint8Array): void;
+  fillAudioWaveformBufferFloat32(buffer: Float32Array): void;
   isInitializingError(id: number): boolean;
   stopRecord(id: number): void;
   isInitializingDone(id: number): boolean;

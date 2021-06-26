@@ -1,3 +1,4 @@
+import { Button } from "../renderingData";
 import { ViewScene } from "../updatingData";
 import { getRenderingTarget, isClickButton } from "./etc";
 import { UpdateContext } from "./type";
@@ -48,6 +49,7 @@ export function updateViewScene(context: UpdateContext, data: ViewScene) {
   handleNextPrevButton(context, data);
   handleLoadingAudio(context, data);
   handleAudioPlayer(context, data);
+  handleRecord(context, data);
 }
 
 function onChangeScene(context: UpdateContext, data: ViewScene) {
@@ -105,5 +107,120 @@ function handleAudioPlayer(context: UpdateContext, data: ViewScene) {
     audioPlayer.playBarXRatio = context.native.audioPlayer.getPlaybackTimeRate(
       data.playId
     );
+  }
+}
+function handleRecord(context: UpdateContext, data: ViewScene) {
+  const recordButton = getRenderingTarget(
+    context,
+    data.recordButtonId,
+    "button"
+  );
+  handleRecordButtonClick(context, data, recordButton);
+  handleRecordedAudioWaveformEditor(context, data);
+}
+function changeRecordingState(
+  context: UpdateContext,
+  data: ViewScene,
+  nextState: ViewScene["recordingState"]
+) {
+  const audioChunkWaveform = getRenderingTarget(
+    context,
+    data.recordingAudioChunkWaveformId,
+    "audioChunkWaveform"
+  );
+  const recordButton = getRenderingTarget(
+    context,
+    data.recordButtonId,
+    "button"
+  );
+  const waveformEdtior = getRenderingTarget(
+    context,
+    data.recordedWaveformEditorId,
+    "audioWaveformEditor"
+  );
+  data.recordingState = nextState;
+  switch (data.recordingState) {
+    case "idle":
+      {
+        recordButton.text.content = "record";
+        audioChunkWaveform.isHidden = true;
+        recordButton.text.content = "record";
+      }
+      break;
+    case "initializing":
+      {
+        recordButton.text.content = "...";
+        audioChunkWaveform.isHidden = true;
+        waveformEdtior.buffer = undefined;
+      }
+      break;
+    case "recording":
+      {
+        recordButton.text.content = "stop record";
+        audioChunkWaveform.isHidden = false;
+        audioChunkWaveform.buffer = {
+          channelChunkDataList: [[]],
+          numberOfChannels: 1,
+          sampleRate: 44100,
+        };
+      }
+      break;
+  }
+}
+function handleRecordButtonClick(
+  context: UpdateContext,
+  data: ViewScene,
+  recordButton: Button
+) {
+  switch (data.recordingState) {
+    case "idle":
+      {
+        if (isClickButton(context, recordButton)) {
+          context.native.record.startInitializeRecord(data.id);
+          changeRecordingState(context, data, "initializing");
+        }
+      }
+      break;
+    case "initializing":
+      {
+        if (context.native.record.isInitializingDone(data.id)) {
+          context.native.record.startRecord(data.id);
+          changeRecordingState(context, data, "recording");
+        } else if (context.native.record.isInitializingError(data.id)) {
+          console.error("fail to initialze record");
+          changeRecordingState(context, data, "idle");
+        }
+      }
+      break;
+    case "recording":
+      {
+        if (isClickButton(context, recordButton)) {
+          context.native.record.stopRecord(data.id);
+          changeRecordingState(context, data, "idle");
+        }
+      }
+      break;
+  }
+}
+function handleRecordedAudioWaveformEditor(
+  context: UpdateContext,
+  data: ViewScene
+) {
+  const waveformEdtior = getRenderingTarget(
+    context,
+    data.recordedWaveformEditorId,
+    "audioWaveformEditor"
+  );
+  const audioChunkWaveform = getRenderingTarget(
+    context,
+    data.recordingAudioChunkWaveformId,
+    "audioChunkWaveform"
+  );
+
+  if (data.recordingState === "recording" && audioChunkWaveform.buffer) {
+    const bufferLength = 44100 * (1 / 60);
+    const buffer = new Float32Array(bufferLength);
+    context.native.record.fillAudioWaveformBufferFloat32(buffer);
+    audioChunkWaveform.buffer.channelChunkDataList[0].push(buffer);
   }
 }

@@ -1,4 +1,5 @@
 import {
+  AudioChunkWaveform,
   AudioWaveformEditor,
   AudioWaveformPlayer,
   Button,
@@ -40,7 +41,7 @@ export function render(
         break;
       case "float32AudioWaveform":
         {
-          renderFloat32AudioWaveform(context, data);
+          renderFloat32AudioWaveformBox(context, data);
         }
         break;
       case "audioWaveformEditor":
@@ -61,6 +62,11 @@ export function render(
       case "audioWaveformPlayer":
         {
           renderAudioWaveformPlayer(context, data);
+        }
+        break;
+      case "audioChunkWaveform":
+        {
+          renderAudioChunkWaveform(context, data);
         }
         break;
       default:
@@ -162,6 +168,47 @@ function renderFloat32AudioWaveform(
   context: CanvasRenderingContext2D,
   data: Omit<Float32AudioWaveform, "id" | "type">
 ) {
+  if (!data.buffer) {
+    return;
+  }
+  context.translate(data.position.x, data.position.y);
+  context.beginPath();
+
+  if (data.buffer.length < data.width) {
+    const sliceWidth = data.width / data.buffer.length;
+    for (let i = 0; i < data.buffer.length; i++) {
+      const x = i * sliceWidth;
+      const value = data.buffer[i];
+      const y = (data.height * (value + 1)) / 2;
+
+      if (i === 0) {
+        context.moveTo(x, y);
+      } else {
+        context.lineTo(x, y);
+      }
+    }
+  } else {
+    for (let x = 0; x < data.width; x += 1) {
+      const index = Math.floor(data.buffer.length * (x / data.width));
+      const value = data.buffer[index];
+      const y = (data.height * (value + 1)) / 2;
+      if (x === 0) {
+        context.moveTo(x, y);
+      } else {
+        context.lineTo(x, y);
+      }
+    }
+  }
+
+  context.lineTo(data.width, data.height / 2);
+  context.stroke();
+  context.translate(-data.position.x, -data.position.y);
+}
+
+function renderFloat32AudioWaveformBox(
+  context: CanvasRenderingContext2D,
+  data: Omit<Float32AudioWaveform, "id" | "type">
+) {
   context.translate(data.position.x, data.position.y);
 
   context.fillStyle = "rgb(200, 200, 200)";
@@ -169,47 +216,18 @@ function renderFloat32AudioWaveform(
 
   context.lineWidth = 2;
   context.strokeStyle = "rgb(0, 0, 0)";
-
-  if (data.buffer) {
-    context.beginPath();
-
-    if (data.buffer.length < data.width) {
-      const sliceWidth = data.width / data.buffer.length;
-      for (let i = 0; i < data.buffer.length; i++) {
-        const x = i * sliceWidth;
-        const value = data.buffer[i];
-        const y = (data.height * (value + 1)) / 2;
-
-        if (i === 0) {
-          context.moveTo(x, y);
-        } else {
-          context.lineTo(x, y);
-        }
-      }
-    } else {
-      for (let x = 0; x < data.width; x += 1) {
-        const index = Math.floor(data.buffer.length * (x / data.width));
-        const value = data.buffer[index];
-        const y = (data.height * (value + 1)) / 2;
-        if (x === 0) {
-          context.moveTo(x, y);
-        } else {
-          context.lineTo(x, y);
-        }
-      }
-    }
-
-    context.lineTo(data.width, data.height / 2);
-    context.stroke();
-  }
-
   context.translate(-data.position.x, -data.position.y);
+
+  renderFloat32AudioWaveform(context, data);
 }
 function renderAudioWaveformEditor(
   context: CanvasRenderingContext2D,
   data: AudioWaveformEditor
 ) {
-  renderFloat32AudioWaveform(context, data);
+  if (data.isHidden) {
+    return;
+  }
+  renderFloat32AudioWaveformBox(context, data);
 
   context.translate(data.position.x, data.position.y);
 
@@ -245,7 +263,7 @@ function renderFloat32AudioWaveformPlayer(
   context: CanvasRenderingContext2D,
   data: Float32AudioWaveformPlayer
 ) {
-  renderFloat32AudioWaveform(context, data);
+  renderFloat32AudioWaveformBox(context, data);
   context.translate(data.position.x, data.position.y);
 
   const barX = data.width * data.playBarXRatio - data.playBarWidth / 2;
@@ -335,7 +353,7 @@ function renderAudioWaveformPlayer(
   context: CanvasRenderingContext2D,
   data: AudioWaveformPlayer
 ) {
-  renderFloat32AudioWaveform(context, {
+  renderFloat32AudioWaveformBox(context, {
     ...data,
     buffer: data.buffer?.channelDataList[0],
   });
@@ -348,4 +366,36 @@ function renderAudioWaveformPlayer(
   context.fillRect(barX, 0, data.playBarWidth, data.height);
 
   context.translate(-data.position.x, -data.position.y);
+}
+function renderAudioChunkWaveform(
+  context: CanvasRenderingContext2D,
+  data: AudioChunkWaveform
+) {
+  context.translate(data.position.x, data.position.y);
+
+  context.fillStyle = "rgb(200, 200, 200)";
+  context.fillRect(0, 0, data.width, data.height);
+
+  context.lineWidth = 2;
+  context.strokeStyle = "rgb(0, 0, 0)";
+  context.translate(-data.position.x, -data.position.y);
+
+  const { buffer } = data;
+  if (buffer && buffer.channelChunkDataList[0]) {
+    const bufferLength = buffer.channelChunkDataList[0].length;
+    const cap = 4 * 60;
+    const length = Math.ceil(bufferLength / cap) * cap;
+    const width = data.width / length;
+    buffer.channelChunkDataList[0].forEach((chunkData, index) => {
+      renderFloat32AudioWaveform(context, {
+        ...data,
+        width,
+        position: {
+          x: data.position.x + index * width,
+          y: data.position.y,
+        },
+        buffer: chunkData,
+      });
+    });
+  }
 }
