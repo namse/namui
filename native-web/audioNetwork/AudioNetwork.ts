@@ -1,18 +1,7 @@
 import { IAudioNetwork } from "../../native/AudioNetwork";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { encodeAudioBufferToWav } from "./encodeAudioBuffer";
-
-if (!process.env.AWS_ACCESS_KEY || !process.env.AWS_SECRET_KEY) {
-  throw new Error("Wrong aws credentials in process.env");
-}
-
-const s3Client = new S3Client({
-  region: process.env.S3_BUCKET_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY,
-    secretAccessKey: process.env.AWS_SECRET_KEY,
-  },
-});
+import { s3Client } from "../util/s3Client";
 
 type AudioSavingContext = {
   isSaving: boolean;

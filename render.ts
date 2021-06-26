@@ -83,7 +83,10 @@ function renderCircle(context: CanvasRenderingContext2D, data: Circle): void {
   context.fill();
 }
 
-function renderText(context: CanvasRenderingContext2D, data: Omit<Text, "id">) {
+function renderText(
+  context: CanvasRenderingContext2D,
+  data: Omit<Text, "id" | "type">
+) {
   context.textAlign = data.align;
   context.textBaseline = data.textBaseline;
   context.font = `${data.fontSize}px sans-serif`;

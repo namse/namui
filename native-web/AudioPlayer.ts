@@ -11,7 +11,7 @@ class AudioPlayer implements IAudioPlayer {
   private static nextPlayId: number = 1;
   private readonly playingContexts: { [playId: number]: AudioPlayingContext } =
     {};
-  play(url: string): { playId: number } {
+  playUrl(url: string): { playId: number } {
     const audio = new Audio(url);
     const playingContext: AudioPlayingContext = {
       isPlaying: false,

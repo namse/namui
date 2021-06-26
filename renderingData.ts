@@ -49,7 +49,7 @@ export type Button = {
   };
   width: number;
   height: number;
-  text: Omit<Text, "id">;
+  text: Omit<Text, "id" | "type">;
 };
 
 export type Audio = {
@@ -165,7 +165,6 @@ export const renderingDataList: RenderingDataList = [
       y: 100,
     },
     text: {
-      type: "text",
       align: "center",
       textBaseline: "middle",
       content: "Start!",
@@ -216,7 +215,6 @@ export const renderingDataList: RenderingDataList = [
       y: 140,
     },
     text: {
-      type: "text",
       align: "center",
       textBaseline: "middle",
       content: "play",
@@ -277,7 +275,6 @@ export const renderingDataList: RenderingDataList = [
       y: 180,
     },
     text: {
-      type: "text",
       align: "center",
       textBaseline: "middle",
       content: "save",
@@ -319,6 +316,60 @@ export const renderingDataList: RenderingDataList = [
       g: 0,
       b: 0,
       a: 0,
+    },
+  },
+  {
+    type: "button",
+    id: 10,
+    width: 90,
+    height: 60,
+    position: {
+      x: 500,
+      y: 800,
+    },
+    text: {
+      align: "center",
+      textBaseline: "middle",
+      content: "< prev",
+      fontSize: 10,
+      position: {
+        x: 45,
+        y: 30,
+      },
+      color: {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 1,
+      },
+      rotationAngle: 0,
+    },
+  },
+  {
+    type: "button",
+    id: 11,
+    width: 90,
+    height: 60,
+    position: {
+      x: 1920 - 500 - 90,
+      y: 800,
+    },
+    text: {
+      align: "center",
+      textBaseline: "middle",
+      content: "next >",
+      fontSize: 10,
+      position: {
+        x: 45,
+        y: 30,
+      },
+      color: {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 1,
+      },
+      rotationAngle: 0,
     },
   },
 ];

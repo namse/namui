@@ -1,5 +1,6 @@
 import {
   AudioWaveformEditor,
+  Button,
   RenderingData,
   RenderingDataMap,
 } from "./renderingData";
@@ -260,6 +261,13 @@ function getUpdatingTarget<
   return target as unknown as TData;
 }
 
+function isClickButton(context: UpdateContext, button: Button): boolean {
+  return (
+    !!context.mouseInfo?.isClick &&
+    checkPositionInRenderingData(button, context.mouseInfo.position)
+  );
+}
+
 function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
   const recordButton = getRenderingTarget(
     context,
@@ -274,9 +282,7 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
 
   switch (data.state) {
     case "idle": {
-      const isClicked =
-        context.mouseInfo?.isClick &&
-        checkPositionInRenderingData(recordButton, context.mouseInfo.position);
+      const isClicked = isClickButton(context, recordButton);
       if (!isClicked) {
         break;
       }
@@ -302,9 +308,7 @@ function updateRecordOnclick(context: UpdateContext, data: RecordOnClick) {
         );
       }
 
-      const isClicked =
-        context.mouseInfo?.isClick &&
-        checkPositionInRenderingData(recordButton, context.mouseInfo.position);
+      const isClicked = isClickButton(context, recordButton);
       if (!isClicked) {
         break;
       }
@@ -398,10 +402,7 @@ function updateAudioWaveform(context: UpdateContext, data: AudioWaveform) {
   }
 
   const playButton = getRenderingTarget(context, data.playButtonId, "button");
-  const isClicked = checkPositionInRenderingData(
-    playButton,
-    context.mouseInfo.position
-  );
+  const isClicked = isClickButton(context, playButton);
   if (!isClicked) {
     return;
   }
@@ -596,11 +597,7 @@ function updateSaveAudioOnClickButton(
     button.text.content = "save";
   }
 
-  if (
-    context.mouseInfo?.isClick &&
-    checkPositionInRenderingData(button, context.mouseInfo.position) &&
-    !data.isSaving
-  ) {
+  if (isClickButton(context, button) && !data.isSaving) {
     const { savingId } = context.native.audioNetwork.saveFloat32PcmAudio(
       audioBuffer,
       data.filename
@@ -609,8 +606,64 @@ function updateSaveAudioOnClickButton(
     data.savingId = savingId;
   }
 }
+function onChangeScene(context: UpdateContext, data: ViewScene) {
+  startDownloadSceneAudio(context, data);
+}
+function startDownloadSceneAudio(context: UpdateContext, data: ViewScene) {
+  data.audioBuffer = undefined;
+  const sceneData = data.sceneDataList[data.sceneIndex];
+  const { downloadingId } = context.native.audioDownloader.startDownloadAudio(
+    `${sceneData.id}.wav`
+  );
+  data.audioBufferDownloadingId = downloadingId;
+}
 function updateViewScene(context: UpdateContext, data: ViewScene) {
   const textBox = getRenderingTarget(context, data.textBoxId, "textBox");
   const text = data.sceneDataList[data.sceneIndex].text;
   textBox.content = text;
+
+  const playAudioButton = getRenderingTarget(
+    context,
+    data.playAudioButtonId,
+    "button"
+  );
+  if (isClickButton(context, playAudioButton)) {
+    context.native.audioPlayer.playUrl(`https://}`);
+  }
+  const nextButton = getRenderingTarget(context, data.nextButtonId, "button");
+  const previousButton = getRenderingTarget(
+    context,
+    data.previousButtonId,
+    "button"
+  );
+  if (isClickButton(context, nextButton)) {
+    data.sceneIndex = Math.min(
+      data.sceneIndex + 1,
+      data.sceneDataList.length - 1
+    );
+    onChangeScene(context, data);
+  } else if (isClickButton(context, previousButton)) {
+    data.sceneIndex = Math.max(data.sceneIndex - 1, 0);
+    onChangeScene(context, data);
+  }
+
+  if (data.audioBufferDownloadingId) {
+    if (
+      context.native.audioDownloader.isDownloadDone(
+        data.audioBufferDownloadingId
+      )
+    ) {
+      data.audioBuffer = context.native.audioDownloader.getDownloadedAudio(
+        data.audioBufferDownloadingId
+      );
+      data.audioBufferDownloadingId = undefined;
+    } else if (
+      context.native.audioDownloader.isDownloadError(
+        data.audioBufferDownloadingId
+      )
+    ) {
+      console.error("error to download audio");
+      startDownloadSceneAudio(context, data);
+    }
+  }
 }

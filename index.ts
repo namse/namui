@@ -11,6 +11,7 @@ import { Native } from "./native";
 import { record } from "./native-web/record/Record";
 import { audioPlayer } from "./native-web/AudioPlayer";
 import { audioNetwork } from "./native-web/audioNetwork/AudioNetwork";
+import { audioDownloader } from "./native-web/AudioDownloader";
 
 function setupCanvasDpi(canvas: HTMLCanvasElement) {
   // Get the device pixel ratio, falling back to 1.
@@ -87,6 +88,7 @@ const native: Native = {
   record,
   audioPlayer,
   audioNetwork,
+  audioDownloader,
 };
 
 let fps: number = 0;
