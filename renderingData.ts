@@ -221,7 +221,7 @@ export const renderingDataList: RenderingDataList = [
       r: 1,
       g: 1,
       b: 1,
-      a: 0.2,
+      a: 0,
     },
   },
   {

@@ -4,9 +4,61 @@ import { updateControlAudioWaveformEditor } from "./AudioWaveformEditor";
 import { getRenderingTarget, isClickButton } from "./etc";
 import { UpdateContext } from "./type";
 
+export function updateViewScene(context: UpdateContext, data: ViewScene) {
+  handleSceneLoading(context, data);
+  if (data.sceneLoadingState !== "finished") {
+    return;
+  }
+  handleText(context, data);
+  handlePlayAudioButton(context, data);
+  handleNextPrevButton(context, data);
+  handleLoadingAudio(context, data);
+  handleAudioPlayer(context, data);
+  handleRecord(context, data);
+}
+
+function handleSceneLoading(context: UpdateContext, data: ViewScene) {
+  const { fileDownloader } = context.native;
+  switch (data.sceneLoadingState) {
+    case "needStartLoading":
+      {
+        const { downloadingId } = fileDownloader.startDownload(
+          `script/${data.sceneName}.json`
+        );
+        data.sceneDataDownloadingId = downloadingId;
+        data.sceneLoadingState = "loading";
+      }
+      break;
+    case "loading":
+      {
+        if (!data.sceneDataDownloadingId) {
+          throw new Error("wrong state.");
+        }
+
+        if (fileDownloader.isDownloadDone(data.sceneDataDownloadingId)) {
+          data.shotDataList = fileDownloader.getFileAsObject(
+            data.sceneDataDownloadingId
+          );
+          data.shotIndex = 0;
+          data.sceneLoadingState = "finished";
+        } else if (
+          fileDownloader.isDownloadError(data.sceneDataDownloadingId)
+        ) {
+          console.error("fail to download scene data");
+          data.sceneLoadingState = "finished";
+        }
+      }
+      break;
+    case "finished":
+      {
+      }
+      break;
+  }
+}
+
 function handleText(context: UpdateContext, data: ViewScene) {
   const textBox = getRenderingTarget(context, data.textBoxId, "textBox");
-  const text = data.sceneDataList[data.sceneIndex].text;
+  const text = data.shotDataList[data.shotIndex].text;
   textBox.content = text;
 }
 function handlePlayAudioButton(context: UpdateContext, data: ViewScene) {
@@ -36,40 +88,28 @@ function handleNextPrevButton(context: UpdateContext, data: ViewScene) {
     "button"
   );
   if (isClickButton(context, nextButton)) {
-    data.sceneIndex = Math.min(
-      data.sceneIndex + 1,
-      data.sceneDataList.length - 1
-    );
-    onChangeScene(context, data);
+    data.shotIndex = Math.min(data.shotIndex + 1, data.shotDataList.length - 1);
+    onChangeShot(context, data);
   } else if (isClickButton(context, previousButton)) {
-    data.sceneIndex = Math.max(data.sceneIndex - 1, 0);
-    onChangeScene(context, data);
+    data.shotIndex = Math.max(data.shotIndex - 1, 0);
+    onChangeShot(context, data);
   }
 }
 
-export function updateViewScene(context: UpdateContext, data: ViewScene) {
-  handleText(context, data);
-  handlePlayAudioButton(context, data);
-  handleNextPrevButton(context, data);
-  handleLoadingAudio(context, data);
-  handleAudioPlayer(context, data);
-  handleRecord(context, data);
-}
-
-function onChangeScene(context: UpdateContext, data: ViewScene) {
+function onChangeShot(context: UpdateContext, data: ViewScene) {
   changeRecordingState(context, data, "idle");
-  startDownloadSceneAudio(context, data);
+  startDownloadShotAudio(context, data);
 }
-function startDownloadSceneAudio(context: UpdateContext, data: ViewScene) {
+function startDownloadShotAudio(context: UpdateContext, data: ViewScene) {
   data.audioBuffer = undefined;
   if (data.playId) {
     context.native.audioPlayer.clearAudio(data.playId);
   }
   data.playId = undefined;
   data.isErrorOnAudioBufferDownloading = undefined;
-  const sceneData = data.sceneDataList[data.sceneIndex];
+  const shotData = data.shotDataList[data.shotIndex];
   const { downloadingId } = context.native.audioDownloader.startDownloadAudio(
-    `${sceneData.id}.wav`
+    `${shotData.id}.wav`
   );
   data.audioBufferDownloadingId = downloadingId;
 }
@@ -79,7 +119,7 @@ function handleLoadingAudio(context: UpdateContext, data: ViewScene) {
   }
 
   if (!data.audioBufferDownloadingId) {
-    startDownloadSceneAudio(context, data);
+    startDownloadShotAudio(context, data);
     return;
   }
 
@@ -324,7 +364,7 @@ function handleRecordSavingButton(context: UpdateContext, data: ViewScene) {
   ) {
     const { savingId } = context.native.audioNetwork.saveFloat32PcmAudio(
       data.controlAudioWaveformEditorData.destAudioBuffer,
-      `${data.sceneDataList[data.sceneIndex].id}.wav`
+      `${data.shotDataList[data.shotIndex].id}.wav`
     );
     data.recordSavingId = savingId;
     recordSaveButton.text.content = "...";

@@ -108,8 +108,11 @@ export type ViewScene = {
   type: "viewScene";
   id: number;
   textBoxId: number;
-  sceneIndex: number;
-  sceneDataList: SceneData[];
+  sceneName: string;
+  sceneLoadingState: "needStartLoading" | "loading" | "finished";
+  sceneDataDownloadingId?: number;
+  shotIndex: number;
+  shotDataList: ShotData[];
   playAudioButtonId: number;
   nextButtonId: number;
   previousButtonId: number;
@@ -126,8 +129,8 @@ export type ViewScene = {
   recordSavingId?: number;
 };
 
-export type SceneData = {
-  id: number;
+export type ShotData = {
+  id: string;
   text: string;
 };
 
@@ -152,7 +155,6 @@ export const updatingDataList: UpdatingDataList = [
     type: "viewScene",
     id: 6,
     textBoxId: 9,
-    sceneIndex: 0,
     previousButtonId: 10,
     nextButtonId: 11,
     playAudioButtonId: 12,
@@ -166,23 +168,9 @@ export const updatingDataList: UpdatingDataList = [
       audioWaveformEditorId: 15,
     },
     recordSaveButtonId: 17,
-    sceneDataList: [
-      {
-        id: 0,
-        text: "아직은 머리위에 해가 떠다니는 오후 시간.",
-      },
-      {
-        id: 1,
-        text: "‘학생이라면 학교에서 공부를, 직장인이라면 직장에서 업무를’ 이라는 사회의 규칙속에서도 불구하고, 이곳. 모던한 분위기의 카페에서 양복을 빼입은 남자가 죽이면 안될 시간을 죽이고 있었다.",
-      },
-      {
-        id: 2,
-        text: "만약 그가 잠깐 시간을 떼우러 온것이라면 아무도 신경을 쓰지 않았을테지만, 남자가 얼마나 오래 있었는지 주부들이 이를 두고 한 두번 쑥덕거리기 까지 했다.",
-      },
-      {
-        id: 3,
-        text: "남자는 그것에 신경을 쓰지 않았다. 아니 사실 남자에겐 그런 여유가 없는 것 같았다.",
-      },
-    ],
+    sceneName: "0주차",
+    sceneLoadingState: "needStartLoading",
+    shotDataList: [],
+    shotIndex: 0,
   },
 ];
