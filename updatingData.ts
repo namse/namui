@@ -76,7 +76,7 @@ export type ControlAudioWaveformEditor = {
   audioWaveformEditorId: number;
   audioWaveformId: number;
   sourceAudioBuffer?: Float32Array;
-  draging?: {
+  dragging?: {
     bar: "start" | "end";
     anchorX: number;
   };
@@ -88,7 +88,7 @@ export type ControlAudioWaveformEditorV2 = {
   audioWaveformEditorId: number;
   sourceAudioBuffer?: Float32Array;
   destAudioBuffer?: Float32Array;
-  draging?: {
+  dragging?: {
     bar: "start" | "end";
     anchorX: number;
   };

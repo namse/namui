@@ -52,13 +52,13 @@ function dragAudioWaveformEditorBar(
   audioWaveformEditor: AudioWaveformEditor
 ) {
   if (!context.mouseInfo?.isMouseDown) {
-    data.draging = undefined;
+    data.dragging = undefined;
     return;
   }
 
   const barMouseOn = getBarMouseOn(context, audioWaveformEditor);
 
-  if (!data.draging) {
+  if (!data.dragging) {
     if (barMouseOn === "nothing") {
       return;
     }
@@ -66,25 +66,25 @@ function dragAudioWaveformEditorBar(
       audioWaveformEditor,
       barMouseOn
     );
-    data.draging = {
+    data.dragging = {
       bar: barMouseOn,
       anchorX: context.mouseInfo.position.x - barBox.x,
     };
     return;
   }
 
-  let nextBarAbsoluteX = context.mouseInfo.position.x - data.draging.anchorX;
+  let nextBarAbsoluteX = context.mouseInfo.position.x - data.dragging.anchorX;
   const oppositeBarBox = getAudioWaveformEdtiorBarBox(
     audioWaveformEditor,
-    data.draging.bar === "start" ? "end" : "start"
+    data.dragging.bar === "start" ? "end" : "start"
   );
   if (
-    data.draging.bar === "start" &&
+    data.dragging.bar === "start" &&
     !(nextBarAbsoluteX + audioWaveformEditor.barWidth < oppositeBarBox.x)
   ) {
     nextBarAbsoluteX = oppositeBarBox.x - audioWaveformEditor.barWidth - 1;
   } else if (
-    data.draging.bar === "end" &&
+    data.dragging.bar === "end" &&
     !(oppositeBarBox.x + oppositeBarBox.width < nextBarAbsoluteX)
   ) {
     nextBarAbsoluteX = oppositeBarBox.x + oppositeBarBox.width + 1;
@@ -101,7 +101,7 @@ function dragAudioWaveformEditorBar(
           audioWaveformEditor.width
       )
     ) * 100;
-  if (data.draging.bar === "start") {
+  if (data.dragging.bar === "start") {
     audioWaveformEditor.startBarPercent = nextBarPercent;
   } else {
     audioWaveformEditor.endBarPercent = nextBarPercent;
@@ -136,8 +136,8 @@ function getHighlightOn(
   data: ControlAudioWaveformEditorV2,
   audioWaveformEditor: AudioWaveformEditor
 ): AudioWaveformEditor["highlightOn"] {
-  if (data.draging?.bar) {
-    return data.draging.bar;
+  if (data.dragging?.bar) {
+    return data.dragging.bar;
   }
   return getBarMouseOn(context, audioWaveformEditor);
 }
