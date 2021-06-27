@@ -16,4 +16,5 @@ export const buildOptions: BuildOptions = {
   define,
   sourcemap: true,
   logLevel: "info",
+  minify: true,
 };
