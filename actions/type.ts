@@ -21,6 +21,10 @@ export type UpdateContext = {
   state: StateData;
   native: Native;
   fps: number;
+  screenInfo: {
+    width: number;
+    height: number;
+  };
 };
 export type Box = {
   x: number;

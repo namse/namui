@@ -207,7 +207,7 @@ export const renderingDataList: RenderingDataList = [
     fontSize: 20,
     position: {
       x: 500,
-      y: 100,
+      y: 25,
     },
     width: 920,
     height: 200,
@@ -232,7 +232,7 @@ export const renderingDataList: RenderingDataList = [
     height: 60,
     position: {
       x: 500,
-      y: 800,
+      y: 725,
     },
     text: {
       align: "center",
@@ -260,7 +260,7 @@ export const renderingDataList: RenderingDataList = [
     height: 60,
     position: {
       x: 1920 - 500 - 90,
-      y: 800,
+      y: 725,
     },
     text: {
       align: "center",
@@ -288,7 +288,7 @@ export const renderingDataList: RenderingDataList = [
     height: 60,
     position: {
       x: 1920 - 500 - 90,
-      y: 700,
+      y: 625,
     },
     text: {
       align: "center",
@@ -316,7 +316,7 @@ export const renderingDataList: RenderingDataList = [
     height: 60,
     position: {
       x: 1920 - 500 - 90,
-      y: 500,
+      y: 425,
     },
     text: {
       align: "center",
@@ -344,7 +344,7 @@ export const renderingDataList: RenderingDataList = [
     height: 60,
     position: {
       x: 500,
-      y: 700,
+      y: 625,
     },
     playBarWidth: 5,
     playBarXRatio: 0,
@@ -357,7 +357,7 @@ export const renderingDataList: RenderingDataList = [
     height: 60,
     position: {
       x: 500,
-      y: 500,
+      y: 425,
     },
     barWidth: 10,
     endBarPercent: 100,
@@ -372,7 +372,7 @@ export const renderingDataList: RenderingDataList = [
     height: 60,
     position: {
       x: 500,
-      y: 500,
+      y: 425,
     },
   },
   {
@@ -383,7 +383,7 @@ export const renderingDataList: RenderingDataList = [
     height: 60,
     position: {
       x: 1920 - 500 - 90,
-      y: 600,
+      y: 525,
     },
     text: {
       align: "center",

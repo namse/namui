@@ -16,18 +16,17 @@ import { actAll } from "./actions";
 import { fileDownloader } from "./native-web/FileDownloader";
 
 function setupCanvasDpi(canvas: HTMLCanvasElement) {
-  // Get the device pixel ratio, falling back to 1.
-  const dpr = window.devicePixelRatio || 1;
-  // Get the size of the canvas in CSS pixels.
-  const rect = canvas.getBoundingClientRect();
-  // Give the canvas pixel dimensions of their CSS
-  // size * the device pixel ratio.
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
-  const ctx = canvas.getContext("2d");
-  // Scale all drawing operations by the dpr, so you
-  // don't have to worry about the difference.
-  ctx?.scale(dpr, dpr);
+  const rect = {
+    width: screen.width,
+    height: screen.height,
+  };
+
+  if (canvas.width !== rect.width) {
+    canvas.width = rect.width;
+  }
+  if (canvas.height !== rect.height) {
+    canvas.height = rect.height;
+  }
 }
 const canvas = document.createElement("canvas");
 canvas.width = 1920;
@@ -57,8 +56,8 @@ canvas.addEventListener("mousemove", (event) => {
     isClick: mouseInfo?.isClick ?? false,
     isMouseDown: mouseInfo?.isMouseDown ?? false,
     position: {
-      x: event.clientX,
-      y: event.clientY,
+      x: event.pageX,
+      y: event.pageY,
     },
   };
 });
@@ -67,8 +66,8 @@ canvas.addEventListener("mousedown", (event) => {
     isClick: !mouseInfo?.isClick,
     isMouseDown: true,
     position: {
-      x: event.clientX,
-      y: event.clientY,
+      x: event.pageX,
+      y: event.pageY,
     },
   };
 });
@@ -77,13 +76,43 @@ canvas.addEventListener("mouseup", (event) => {
     isClick: false,
     isMouseDown: false,
     position: {
-      x: event.clientX,
-      y: event.clientY,
+      x: event.pageX,
+      y: event.pageY,
     },
   };
 });
 canvas.addEventListener("mouseout", (event) => {
   mouseInfo = undefined;
+});
+canvas.addEventListener("touchstart", (event) => {
+  mouseInfo = {
+    isClick: true,
+    isMouseDown: true,
+    position: {
+      x: event.touches[0].pageX,
+      y: event.touches[0].pageY,
+    },
+  };
+});
+canvas.addEventListener("touchmove", (event) => {
+  mouseInfo = {
+    isClick: mouseInfo?.isClick ?? false,
+    isMouseDown: mouseInfo?.isMouseDown ?? false,
+    position: {
+      x: event.touches[0].pageX,
+      y: event.touches[0].pageY,
+    },
+  };
+});
+canvas.addEventListener("touchend", (event) => {
+  mouseInfo = {
+    isClick: false,
+    isMouseDown: false,
+    position: {
+      x: event.touches[0].pageX,
+      y: event.touches[0].pageY,
+    },
+  };
 });
 
 const native: Native = {
@@ -101,14 +130,11 @@ setInterval(() => {
   frameCount = 0;
 }, 1000);
 
-function onFrame(context: CanvasRenderingContext2D) {
-  frameCount++;
-  context.clearRect(0, 0, canvas.width, canvas.height);
-
+function getUpdateContext(): UpdateContext {
   const renderingDataMap = toMap(renderingDataList);
   const updatingDataMap = toMap(updatingDataList);
 
-  const updateContext: UpdateContext = {
+  return {
     dataList: updatingDataList,
     renderingDataMap,
     updatingDataMap,
@@ -118,7 +144,18 @@ function onFrame(context: CanvasRenderingContext2D) {
     state: stateData,
     native,
     fps,
+    screenInfo: {
+      width: screen.width,
+      height: screen.height,
+    },
   };
+}
+
+function onFrame(context: CanvasRenderingContext2D) {
+  frameCount++;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  const updateContext = getUpdateContext();
+  setupCanvasDpi(canvas);
 
   actAll(updateContext);
   render(context, renderingDataList);

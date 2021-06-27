@@ -1,5 +1,6 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { CommonAudioBuffer } from "../common/AudioBuffer";
+import { env } from "../env";
 import { IAudioDownloader } from "../native/AudioDownloader";
 import { toCommonAudioBuffer } from "./util/AudioBuffer";
 import { readAsArrayBuffer } from "./util/fileReader";
@@ -20,7 +21,7 @@ class AudioDownloader implements IAudioDownloader {
     try {
       const output = await s3Client.send(
         new GetObjectCommand({
-          Bucket: process.env.S3_BUCKET_NAME,
+          Bucket: env.S3_BUCKET_NAME,
           Key: filename,
         })
       );

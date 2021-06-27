@@ -129,6 +129,21 @@ export type ViewScene = {
   recordSavingId?: number;
 };
 
+export type Layout = {
+  type: "layout";
+  id: number;
+  isSetUpFinished: boolean;
+  textBoxId: number;
+  playAudioButtonId: number;
+  nextButtonId: number;
+  previousButtonId: number;
+  recordButtonId: number;
+  recordingAudioChunkWaveformId: number;
+  audioPlayerId: number;
+  recordSaveButtonId: number;
+  audioWaveformEditorId: number;
+};
+
 export type ShotData = {
   id: string;
   text: string;
@@ -145,12 +160,27 @@ export type UpdatingData =
   | ControlAudioWaveformEditor
   | SaveAudioOnClickButton
   | ViewScene
+  | Layout
   | BaseUpdatingData;
 
 export type UpdatingDataList = Array<UpdatingData>;
 export type UpdatingDataMap = { [id: number]: UpdatingData };
 
 export const updatingDataList: UpdatingDataList = [
+  {
+    type: "layout",
+    id: 1,
+    isSetUpFinished: false,
+    textBoxId: 9,
+    previousButtonId: 10,
+    nextButtonId: 11,
+    playAudioButtonId: 12,
+    recordButtonId: 13,
+    audioPlayerId: 14,
+    recordingAudioChunkWaveformId: 16,
+    recordSaveButtonId: 17,
+    audioWaveformEditorId: 15,
+  },
   {
     type: "viewScene",
     id: 6,

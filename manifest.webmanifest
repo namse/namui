@@ -1,0 +1,9 @@
+{
+    "background_color": "purple",
+    "description": "script recorder",
+    "display": "fullscreen",
+    "icons": [],
+    "name": "Luda",
+    "short_name": "Luda",
+    "start_url": "/app/index.html"
+}

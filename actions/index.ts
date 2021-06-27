@@ -7,6 +7,7 @@ import {
   updateFpsText,
   updateSaveAudioOnClickButton,
 } from "./etc";
+import { layout } from "./layout";
 import { UpdateContext } from "./type";
 import { updateViewScene } from "./viewScene";
 
@@ -43,6 +44,10 @@ export function actAll(context: UpdateContext) {
       }
       case "viewScene": {
         updateViewScene(context, data);
+        return;
+      }
+      case "layout": {
+        layout(context, data);
         return;
       }
       default: {
